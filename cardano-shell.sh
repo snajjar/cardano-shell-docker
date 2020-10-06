@@ -6,7 +6,7 @@ ABS_CURR_DIR=$(realpath $CURR_DIR)
 docker run \
     --network=host \
     --rm \
-    -v $ABS_CURR_DIR/config/:/config/ \
-    -v $ABS_CURR_DIR/cmd/:/cmd/ \
-    -v $ABS_CURR_DIR/ressources/.bashrc:/root/.bashrc \
+    -v $ABS_CURR_DIR/docker/config/:/config/ \
+    -v $ABS_CURR_DIR/docker/cmd/:/cmd/ \
+    -v $ABS_CURR_DIR/docker/ressources/.bashrc:/root/.bashrc \
     -it cardano-stakepool:latest
