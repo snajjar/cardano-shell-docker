@@ -4,7 +4,7 @@ SHELL ["/bin/bash", "-c"]
 
 # Install tools
 RUN apt-get update -y \
-    && apt-get install -y htop \
+    && apt-get install -y htop unzip grc \
     && apt-get clean
 
 

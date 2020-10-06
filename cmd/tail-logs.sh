@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-tail -f /logs/node.log
+grc tail -f /logs/node.log
