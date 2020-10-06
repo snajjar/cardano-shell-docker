@@ -1,17 +1,22 @@
-from inputoutput/cardano-node
+from arradev/cardano-node
 LABEL maintainer="seb@stakepool.fr"
 SHELL ["/bin/bash", "-c"]
 
-# Install dependencies
-#RUN apt-get update -y \
-#    && apt-get install -y find wget grep \
-#    && apt-get clean
+# Install tools
+RUN apt-get update -y \
+    && apt-get install -y htop \
+    && apt-get clean
+
 
 # Expose ports
 ## cardano-node, EKG, Prometheus
 EXPOSE 3000 12788 12798
 
-# Add path for cardano-node to PATH
-ENV PATH="$PATH:/nix/store/b2dysryvhkd79qygbgw5agyvk96wlmjg-cardano-node-exe-cardano-node-1.20.0/bin/"
+# ENV variables
+ENV PATH="/root/.cabal/bin/:/scripts/:/scripts/functions/:/cardano-node/scripts/:${PATH}"
+ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
 
-ENTRYPOINT ["/bin/bash", "-l", "-c"]
+# Remove /etc/profile, so it doesn't mess up our PATH env
+RUN rm /etc/profile
+
+ENTRYPOINT ["/bin/bash", "-l"]

@@ -7,6 +7,6 @@ docker run \
     --network=host \
     --rm \
     -v $ABS_CURR_DIR/config/:/config/ \
-    -v $ABS_CURR_DIR/scripts/:/scripts/ \
-    -v $ABS_CURR_DIR/ressources/.bashrc:/.bashrc \
-    -it cardano-stakepool
+    -v $ABS_CURR_DIR/cmd/:/cmd/ \
+    -v $ABS_CURR_DIR/ressources/.bashrc:/root/.bashrc \
+    -it cardano-stakepool:latest
