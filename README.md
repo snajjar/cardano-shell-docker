@@ -1,6 +1,6 @@
-# Cardano-stakepool: docker-based image to run a stakepool
+# Cardano-shell-docker: docker-based image to run a stakepool
 
-Cardano-shell is an utility to simplify access to cardano-node and cardano-cli from a docker environment. No need to install from source, with specific version of ghc, libsodium and other specific libraries and build tools that might break your package manager dependencies.
+Cardano-shell-docker is an collection of utilities to simplify access to cardano-node and cardano-cli from a docker environment. No need to install from source, with specific version of ghc, libsodium and other specific libraries and build tools that might hard to build on your system, or that could break your package manager dependencies.
 
 `DISCLAIMER`: I share my own work for free without any kind of warranty. **Use these tools at your own risk**.
 
@@ -48,7 +48,7 @@ Anytime you wish to change the node configuration, modify the .json files in the
 
 Once again, you can launch a container with a running node and an open shell with:
 
-    $ ./cardano-shell-with-node.sh
+    $ ./cardano-shell.sh node
 
 This will launch a [tmux](https://en.wikipedia.org/wiki/Tmux) session with 3 panes. A shell, a cardano-node and a log-grepper. If you don't know how to operate tmux and you need to, I suggest you take a look at the [tmux cheat sheet](https://tmuxcheatsheet.com/).
 
@@ -167,9 +167,9 @@ First, deploy the node configuration (if you haven't done it yet)
 
     ./deploy-configuration.sh
 
-Then run a shell
+Then run a shell with node
 
-    ./cardano-shell-with-node.sh
+    ./cardano-shell.sh node
 
 Some commands might need the blockchain to be synchronized. The blockchain is several GB, so it may take a while to have the node synchronized. Note that it's stored into `docker/config/db` folder, so if you delete the `docker` folder, you will have to download it again.
 
@@ -309,7 +309,7 @@ On your `local` machine, perform the following procedure.
 
 Start a shell with node:
 
-    ./cardano-shell-with-node.sh
+    ./cardano-shell.sh node
 
 Generate cold keys for your stakepool:
 
@@ -429,6 +429,26 @@ Once done, copy from the `local` machine your config files:
 
     scp -r ./config/ user@<relay ip>:path/to/repo
 
-Launch a screen session
+Then, deploy the relay configuration to the docker:
+
+    ./deploy-configuration.sh relay
+
+Launch a screen session in `relay` node, that will survive when we exit the shell with `<ctrl>+a followed by d`
+
+    screen
+
+Then start your relay node
+
+    ./cardano-shell.sh relay
+
+And that's it, you relay should be working!
+
+Now, time to start our block-producing node, also sometime called *core node*.
+
+On the `block` node, pull the project and scp config files, just like for the relay node. Then, deploy the block-producer configuration:
+
+    ./deploy-configuration.sh block
+
+
 
 </details>
