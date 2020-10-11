@@ -370,6 +370,8 @@ From our local shell, move our files to the backup folder, rebuild our archive z
 
 </details>
 
+Save your stakepool.zip archive to a cold secure location.
+
 ## Configure the relay and block-producer nodes
 
 <details>
@@ -421,7 +423,6 @@ Then edit `config/relay/mainnet-topology.json` to set your relay to communicate 
         },
         ...
     }
-
 
 
 

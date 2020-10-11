@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 CURR_DIR=$(dirname "${BASH_SOURCE[0]}")
 ABS_CURR_DIR=$(realpath $CURR_DIR)
