@@ -32,6 +32,14 @@ Note that commands requiring to query the blockchain for information won't work 
 
 To be able to run all cardano-cli commands, you'll need a cardano-node running AND synchronized.
 
+In the `config/node` folder, fetch the mainnet node config files from IOHK:
+
+    wget https://hydra.iohk.io/job/Cardano/cardano-node/cardano-deployment/latest-finished/download/1/mainnet-config.json
+    wget https://hydra.iohk.io/job/Cardano/cardano-node/cardano-deployment/latest-finished/download/1/mainnet-byron-genesis.json
+    wget https://hydra.iohk.io/job/Cardano/cardano-node/cardano-deployment/latest-finished/download/1/mainnet-shelley-genesis.json
+    wget https://hydra.iohk.io/job/Cardano/cardano-node/cardano-deployment/latest-finished/download/1/mainnet-topology.json
+
+
 If it's your first time running the cardano-shell with a node, run the deployment script (that will export scripts and configuration to the docker folder):
 
     $ ./deploy-configuration.sh
@@ -289,5 +297,132 @@ When done, don't forget to delete the keys from your docker directory:
 
     sudo rm -rf docker/config/keys/*.skey
     sudo rm -rf docker/config/keys/*.vkey
+
+</details>
+
+## Generate our stake pool keys and certificate
+
+<details>
+<summary>Expand for detailed procedure</summary>
+
+On your `local` machine, perform the following procedure.
+
+Start a shell with node:
+
+    ./cardano-shell-with-node.sh
+
+Generate cold keys for your stakepool:
+
+    cardano-cli shelley node key-gen \
+      --cold-verification-key-file /config/keys/cold.vkey \
+      --cold-signing-key-file /config/keys/cold.skey \
+      --operational-certificate-issue-counter-file /config/keys/cold.counter
+
+Generate a VRF keypair:
+
+    cardano-cli shelley node key-gen-VRF \
+    --verification-key-file /config/keys/vrf.vkey \
+    --signing-key-file /config/keys/vrf.skey
+
+Generate a [KES](https://cardano-foundation.gitbook.io/stake-pool-course/stake-pool-guide/stake-pool/kes_period) keypair:
+
+    cardano-cli shelley node key-gen-KES \
+    --verification-key-file /config/keys/kes.vkey \
+    --signing-key-file /config/keys/kes.skey
+
+Now, we need to check what is the start of our KES validity period (check the above link to understand why).
+
+get the current block number with `sp-ttl` command in the cardano-shell:
+
+    # sp-ttl
+    {
+        "blockNo": 4805614,
+        "headerHash": "5469dcf22575fb9a9dc1eba37fd15e94ff98272696c3d1af6baca5930e8623ae",
+        "slotNo": 10869566
+    }
+
+We can check now in the `mainnet-shelley-genesis` file what is our KES period:
+
+    $ grep KES mainnet-shelley-genesis.json
+      "slotsPerKESPeriod": 129600,
+       "maxKESEvolutions": 62,
+
+In this example, each KES period is 129600 slots. So the current KES period started at 10869566 / 129600:
+
+    $ expr 10869566 / 129600
+    83
+
+We can now create our node certificate:
+
+    cardano-cli shelley node issue-op-cert \
+      --kes-verification-key-file kes.vkey \
+      --cold-signing-key-file cold.skey \
+      --operational-certificate-issue-counter cold.counter \
+      --kes-period 83 \
+      --out-file node.cert
+
+From our local shell, move our files to the backup folder, rebuild our archive zip, and delete the keys from the docker folder:
+
+    sudo cp -r ./docker/config/keys .backup
+    sudo chmod 400 /docker/config/keys/*
+    sudo zip --encrypt .backup/stakepool.zip .backup/keys/
+    sudo rm -rf ./docker/config/keys
+
+</details>
+
+## Configure the relay and block-producer nodes
+
+<details>
+<summary> Expand for detailed procedure </summary>
+
+### Configure topology files for block-producing and relay nodes.
+
+First, we need to edit our configuration files.
+
+Copy configuration files ([fetched from IOHK](https://iohk.zendesk.com/hc/en-us/articles/900001951686-Starting-the-node-and-connecting-to-mainnet)) from `config/node` folder to `config/relay` and `config/block`.
+
+Edit `config/block/mainnet-topology.json` to set change the addr/port settings to your **relay** node public ip/port
+
+    {
+        "Producers": [
+            {
+            "addr": "relay.stakepool.fr",
+            "port": 3000,
+            "valency": 2
+            }
+        ]
+    }
+
+Then edit `config/relay/mainnet-topology.json` to set your relay to communicate with your **block-producing** node ip/port, and with other relays of the network. You can find a list of mainnet relays on [adapools](https://a.adapools.org/topology)
+
+    {
+    "Producers": [
+        {
+        "addr": "block.stakepool.fr",
+        "port": 3000,
+        "valency": 1
+        },
+        {
+        "addr": "relays-new.cardano-mainnet.iohk.io",
+        "port": 3001,
+        "valency": 2
+        },
+        {
+            "type": "regular",
+            "addr": "51.79.35.204",
+            "port": 3001,
+            "valency": 1
+        },
+        {
+            "type": "regular",
+            "addr": "usa-relay.cardanistas.io",
+            "port": 8082,
+            "valency": 1
+        },
+        ...
+    }
+
+
+
 
 </details>
