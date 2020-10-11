@@ -8,7 +8,7 @@ SECURITY: From a security perspective, **you should always read the source of th
 
 WARNING: Project currently under construction. Windows currently not supported (local scripts need adjustments).
 
-## Installation / setup of cardano-shell
+# Installation / setup of cardano-shell
 
 Install [docker](https://docs.docker.com/get-docker/), clone this project, then run:
 
@@ -18,7 +18,7 @@ On Linux/Mac, from the root of the project, make the utility scripts executables
 
     $ chmod +x *.sh
 
-## Launching a cardano-shell
+# Launching a cardano-shell
 
 To launch a shell able to run cardano-cli:
 
@@ -32,7 +32,7 @@ After that, you can launch a container with a running node and an open shell wit
 
     $ ./cardano-shell-with-node.sh
 
-## Building a stake pool with cardano-shell
+# Building a stake pool with cardano-shell
 
 For that matter, the recommanded configuration is 3 hosts:
 - 1 online relay node, we'll call it `relay`.
@@ -43,16 +43,23 @@ For that matter, the recommanded configuration is 3 hosts:
 
 **For a reasonable security/usability tradeoff**, run theses commands on a secured, firewalled host (that could be your local machine), that you are positive that it was never compromised.
 
-### Quick note on keys and addresses
 
+
+<details>
+<summary>## Understanding keys and addresses files</summary>
 Generation procedures for keys and addresses usually output 3 files:
 - file.skey: private signing key, SHOULD NEVER BE ONLINE
 - file.vkey: public verification key, used in many procedures. Keep it offline too for best security
 - file.addr: address corresponding to the key pair generated. Could be public if needed.
 
-Recommandation: Backup theses 3 files to a seperate secure location, never put it online (at least unencrypted).
+You'll generate a payment keypair/address, to honor your stakepool pledge, and a stake keypair/address, that will receive the rewards for your participation in the cardano blockchain.
 
-### Generating payment keys/address and stake keys/address
+Recommandation: Backup theses 3 files to a seperate secure location, never put it online (at least unencrypted).
+</details>
+
+## Generating payment keys/address and stake keys/address
+
+<details>
 
 This procedure is for shelley mainnet. For testnet, replace in following commands `--mainnet` with `--testnet-magic 42`.
 
@@ -117,10 +124,14 @@ Create a encrypted archive that you'll backup somewhere. Don't hesitate to [gpg 
 
      sudo zip --encrypt .backup/stakepool.zip docker/config/keys/
 
-Remember not to use --password (zip) or --passphrase (gpg) or similar options, as the password would be stored in plain text in the shell history.
+Remember not to use --password (zip) or --passphrase (gpg) or similar options, as the password would be stored in plain text in the shell history and in system memory. If you absolutely have to, use `set -o history` to turn off history, and `set +o history` to turn it back on.
 
 Finally, close the cardano-shell and verify that the container is stopped and deleted with `docker list containers` and `docker list containers -a`.
 Once done, delete the config/keys folders:
 
     rm -rf ./docker/config/keys/
+
+</details>
+
+## Registering the strage address in the blockchain
 
