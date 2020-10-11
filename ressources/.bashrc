@@ -2,6 +2,8 @@
 # ~/.bashrc
 #
 
+export CARDANO_NODE_SOCKET_PATH=$NODE_SOCKET_PATH
+
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
@@ -12,4 +14,8 @@ export EDITOR="vim"
 # alias utilities
 alias ll='ls --color=auto -al'
 alias ls='ls --color=auto'
+
+# stakepool utils
+alias sp-balance='cardano-cli shelley query utxo --address $(cat /config/keys/payment.addr) --mainnet'
+alias sp-ttl='cardano-cli shelley query tip --mainnet'
 
