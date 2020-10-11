@@ -17,7 +17,6 @@ else
     sudo cp -r $ABS_CURR_DIR/config/node $ABS_CURR_DIR/docker/config
 fi
 
-sudo cp -r $ABS_CURR_DIR/config/node $ABS_CURR_DIR/docker/config
 sudo cp -r $ABS_CURR_DIR/ressources $ABS_CURR_DIR/docker/
 
 echo "[*] copying run scripts to docker"

@@ -424,6 +424,11 @@ Then edit `config/relay/mainnet-topology.json` to set your relay to communicate 
         ...
     }
 
+On the `relay` host, clone this project, then build the docker image.
+Once done, copy from the `local` machine your config files:
 
+    scp -r ./config/ user@<relay ip>:path/to/repo
+
+Launch a screen session
 
 </details>
