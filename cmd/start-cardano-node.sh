@@ -38,7 +38,7 @@ else
             --topology ${NODE_PATH}/mainnet-topology.json \
             --database-path ${NODE_PATH}/db \
             --socket-path ${NODE_SOCKET_PATH} \
-            --host-addr $(dig +short $NODE_IP) \
+            --host-addr $NODE_IP \
             --port ${NODE_PORT} \
             --config ${NODE_PATH}/mainnet-config.json
     done
