@@ -480,6 +480,9 @@ Once started, you can delete the pool keys again:
 
 ## Register the stakepool metadata
 
+<details>
+<summary>Expand for detailed procedure</summary>
+
 Create a .json file with your stakepool info
 
     {
@@ -515,19 +518,19 @@ Once you decide those numbers (in lovelace), copy the necessary key files to you
 then create you docker certificate:
 
     cardano-cli shelley stake-pool registration-certificate \
-        --cold-verification-key-file config/keys/cold.vkey \
-        --vrf-verification-key-file config/keys/vrf.vkey \
+        --cold-verification-key-file /config/keys/cold.vkey \
+        --vrf-verification-key-file /config/keys/vrf.vkey \
         --pool-pledge <pool pledge> \
         --pool-cost <pool cost> \
         --pool-margin <pool margin> \
-        --pool-reward-account-verification-key-file config/keys/stake.vkey \
-        --pool-owner-stake-verification-key-file config/keys/stake.vkey \
+        --pool-reward-account-verification-key-file /config/keys/stake.vkey \
+        --pool-owner-stake-verification-key-file /config/keys/stake.vkey \
         --mainnet \
         --pool-relay-ipv4 <relay ip> \
         --pool-relay-port <relay port> \
         --metadata-url <metadata json url> \
         --metadata-hash <metadata hash> \
-        --out-file pool-registration.cert
+        --out-file /config/keys/pool-registration.cert
 
 Create the delegation certificate (that will be used to honor our pledge)
 
@@ -639,3 +642,29 @@ Now we can delete your keys from our node folder:
 Create a .zip encrypted backup for your config folder, and save it somewhere safe.
 
     sudo zip --encrypt .backup/stakepool.zip docker/config/keys/
+
+</details>
+
+## Update the stakepool parameters
+
+<details>
+<summary>Expand for detailed procedure</summary>
+
+Over time, you'll gather more funds. You might want to change your pledge, your margin, or some of your metadata.
+
+Proceed like for the initial pool registration, but this time you don't have to pay deposit fees.
+
+</details>
+
+# Thanks and Support
+
+If you would like to support the maintainance of this project:
+- deleguate to stakepool.fr pool [SPFR]
+- install Brave browser from my [referral link](https://brave.com/sna144). It's a privacy-oriented ad-blocking browser forked from chrome, that let you mine cryptocurrency if you accept ads.
+- Donations are also appreciated:
+  - ADA: DdzFFzCqrht8ZdbpE6zKwNegme7TjAtVBw2t4abuqRshNhobiAw3ND5NuC5fhuHhPg8LTk5wX5BdgZXYrqwfnnfncfafyzbrE7zdPBz5
+  - BTC: 1NmoNTcA1qRannogf1ycHqte6cYqLvZSEo
+  - ETH: 0xa2d717472e7de75a3b46f96d3fcfd1ff861be895
+
+
+Shoutout to [abracadaniel](https://github.com/abracadaniel/cardano-node-docker) for his work (providing a good base).
