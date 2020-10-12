@@ -435,15 +435,12 @@ Then, deploy the relay configuration to the docker:
 
     ./deploy-configuration.sh relay
 
-Launch a screen session in `relay` node, that will survive when we exit the shell with `<ctrl>+a followed by d`
-
-    screen
-
 Then start your relay node
 
     ./cardano-shell.sh relay
 
-And that's it, you relay should be working!
+And that's it, you relay should be working! Note that using the `relay` or `block` arguments, docker is launched with --restart unless-stopped, meaning it will reboot with your machine. You can stop it with `docker container list` and `docker stop <containerid>`.
+If you want to detach from the docker session without closing anything, use `<ctrl+p> <ctrl+q>` to detach. You can reattach later with `docker container list` and `docker attach <containerid>`.
 
 Now, time to start our block-producing node, also sometime called *core node*.
 

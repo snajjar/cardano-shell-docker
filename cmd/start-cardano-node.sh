@@ -3,11 +3,12 @@
 # get all configuration env var
 source /cmd/config.sh
 
-if [ $1 == "block" ]
+if [ "$1" == "block" ]
 then
     while true; do
         echo "Starting block-producing node"
         cardano-node run \
+            --restart unless-stopped \
             --topology ${NODE_PATH}/mainnet-topology.json \
             --database-path ${NODE_PATH}/db \
             --socket-path ${NODE_SOCKET_PATH} \
@@ -18,11 +19,12 @@ then
             --shelley-vrf-key /config/keys/vrf.skey \
             --shelley-operational-certificate /config/keys/node.cert
     done
-elif [  $1 == "relay" ]
+elif [  "$1" == "relay" ]
 then
     while true; do
         echo "Starting relay node"
         cardano-node run \
+            --restart unless-stopped \
             --topology ${NODE_PATH}/mainnet-topology.json \
             --database-path ${NODE_PATH}/db \
             --socket-path ${NODE_SOCKET_PATH} \
