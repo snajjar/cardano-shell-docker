@@ -9,13 +9,13 @@ sudo mkdir -p $ABS_CURR_DIR/docker
 
 if [ "$1" == "block" ]; then
     echo "[*] deploying configuration for block-producing node"
-    sudo cp -r $ABS_CURR_DIR/config/block $ABS_CURR_DIR/docker/config
+    sudo cp -r $ABS_CURR_DIR/config/block/* $ABS_CURR_DIR/docker/config
 elif [  "$1" == "relay" ]; then
     echo "[*] deploying configuration for relay node"
-    sudo cp -r $ABS_CURR_DIR/config/relay $ABS_CURR_DIR/docker/config
+    sudo cp -r $ABS_CURR_DIR/config/relay/* $ABS_CURR_DIR/docker/config
 else
     echo "[*] deploying configuration for local node"
-    sudo cp -r $ABS_CURR_DIR/config/node $ABS_CURR_DIR/docker/config
+    sudo cp -r $ABS_CURR_DIR/config/node/* $ABS_CURR_DIR/docker/config
 fi
 
 sudo cp -r $ABS_CURR_DIR/ressources $ABS_CURR_DIR/docker/
