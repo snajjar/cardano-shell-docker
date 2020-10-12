@@ -12,7 +12,7 @@ Cardano-shell-docker is an collection of utilities to simplify access to cardano
 
 Install [docker](https://docs.docker.com/get-docker/), clone this project, then run:
 
-    $ docker build . -t cardano-shell
+    $ docker build . -t cardano-stakepool
 
 On Linux/Mac, from the root of the project, make the utility scripts executables with:
 
@@ -144,7 +144,7 @@ From your local shell from cardano-shell folder, backup the keys from the contai
 
 Create a encrypted archive that you'll backup somewhere. Don't hesitate to [gpg encrypt](https://linuxconfig.org/how-to-encrypt-and-decrypt-individual-files-with-gpg) it if your gpg keys are already securely backed up. Here's a simple way to create an encrypted archive:
 
-     sudo zip --encrypt .backup/stakepool.zip docker/config/keys/
+    sudo zip --encrypt .backup/stakepool.zip docker/config/keys/
 
 Remember not to use --password (zip) or --passphrase (gpg) or similar options, as the password would be stored in plain text in the shell history and in system memory. If you absolutely have to, use `set -o history` to turn off history, and `set +o history` to turn it back on.
 
@@ -424,6 +424,8 @@ Then edit `config/relay/mainnet-topology.json` to set your relay to communicate 
         ...
     }
 
+Update the `cmd/config.sh` script as well with your relay and block ip/port.
+
 On the `relay` host, clone this project, then build the docker image.
 Once done, copy from the `local` machine your config files:
 
@@ -449,6 +451,191 @@ On the `block` node, pull the project and scp config files, just like for the re
 
     ./deploy-configuration.sh block
 
+You need a few additional files to run the block-producing node: the pool keys `kes.skey`, `vrf.skey`, and `node.cert`. Copy them to your block host from `local`:
 
+    mkdir poolkeys
+    sudo cp .backup/keys/kes.skey ./poolkeys
+    sudo cp .backup/keys/vrf.skey ./poolkeys
+    sudo cp .backup/keys/node.cert ./poolkeys
+    sudo chown -R $(whoami) poolkeys
+    scp -r poolkeys/ user@<relay ip>:path/to/repo
+    rm -rf poolkeys/
+
+Then from the `block host`
+
+    sudo mkdir -p docker/config/keys/
+    sudo mv poolkeys/* docker/config/keys/
+    rm -r poolkeys
+
+You can now run the block-producing node
+
+    ./cardano-shell block
+
+Once started, you can delete the pool keys again:
+
+    rm -rf docker/config/keys/*.skey
+    rm -rf docker/config/keys/node.cert
 
 </details>
+
+## Register the stakepool metadata
+
+Create a .json file with your stakepool info
+
+    {
+        "name": "TestPool",
+        "description": "The pool that tests all the pools",
+        "ticker": "TEST",
+        "homepage": "https://teststakepool.com"
+    }
+
+You are not required to have a live homepage (for now). Note that the `ticker` is the search string that will allow users to find your pool.
+
+Upload it to an url that is less that 65 characters long (you can use `gist`  and `git.io` to shorten the url).
+
+cp that file to the docker/config/ folder so we can access it from our cardano-shell
+
+    cp metadata.json docker/config/
+
+Then from your local cardano-shell, get the hash:
+
+    cardano-cli shelley stake-pool metadata-hash --pool-metadata-file /config/metadata.json
+
+Finally, we are able to create our stakepool registration certificate. Choose your:
+- pool pledge (amount that you will stake. YOU MUST HONOR YOUR PLEDGE)
+- pool cost (cost of running your pool)
+- pool margin (% of rewards)
+
+Once you decide those numbers (in lovelace), copy the necessary key files to your docker config
+
+    sudo cp .backup/keys/cold.vkey docker/config/keys/
+    sudo cp .backup/keys/vrf.vkey docker/config/keys/
+    sudo cp .backup/keys/stake.vkey docker/config/keys/
+
+then create you docker certificate:
+
+    cardano-cli shelley stake-pool registration-certificate \
+        --cold-verification-key-file config/keys/cold.vkey \
+        --vrf-verification-key-file config/keys/vrf.vkey \
+        --pool-pledge <pool pledge> \
+        --pool-cost <pool cost> \
+        --pool-margin <pool margin> \
+        --pool-reward-account-verification-key-file config/keys/stake.vkey \
+        --pool-owner-stake-verification-key-file config/keys/stake.vkey \
+        --mainnet \
+        --pool-relay-ipv4 <relay ip> \
+        --pool-relay-port <relay port> \
+        --metadata-url <metadata json url> \
+        --metadata-hash <metadata hash> \
+        --out-file pool-registration.cert
+
+Create the delegation certificate (that will be used to honor our pledge)
+
+    cardano-cli shelley stake-address delegation-certificate \
+        --stake-verification-key-file /config/keys/stake.vkey \
+        --cold-verification-key-file /config/keys/cold.vkey \
+        --out-file /config/keys/delegation.cert
+
+Once node, backup this file in our backup folder (from our local shell):
+
+    sudo cp docker/config/keys/pool-registration.cert .backup/keys/
+    sudo cp docker/config/keys/delegation.cert .backup/keys/
+    sudo chmod 400 .backup/keys/pool-registration.cert
+    sudo chmod 400 .backup/keys/delegation.cert
+
+Now, we need to submit our pool-registration.cert and delegation.cert to the blockchain.
+
+Create a work directory for the transaction, get protocol.json and check what our pool deposit needs to be.
+
+    # mkdir /work
+    # cd /work
+    # cardano-cli shelley query protocol-parameters --mainnet --out-file protocol.json
+    # grep poolDeposit protocol.json
+    "poolDeposit": 500000000,
+
+Our pool deposit will be 500 ada (~5$ when i'm writing this). We won't need to pay the deposit again if we need to update the pool certificate (changing pledge, margin, metadata, etc).
+
+So, let's build the transaction (same procedure as for registring stake key).
+We will need to use `stake.skey`, `payment.skey` and `cold.skey` to sign the transaction:
+
+    sudo cp .backup/keys/payment.skey docker/config/keys/
+    sudo cp .backup/keys/stake.skey docker/config/keys/
+    sudo cp .backup/keys/cold.skey docker/config/keys/
+
+check your utxo with `sp-balance` and the current ttl with `sp-ttl`.
+
+Here's our base command for building the transaction:
+
+    cardano-cli shelley transaction build-raw \
+        --tx-in <utxo number>#<txix> \
+        --tx-out $(cat /config/keys/payment.addr)+0 \
+        --ttl 0 \
+        --fee 0 \
+        --out-file tx.raw \
+        --certificate-file /config/keys/pool-registration.cert \
+        --certificate-file /config/keys/delegation.cert
+
+For calculating the min fee, we will use a witness count of 3 (since we will sign with payment.skey, stake.skey and cold.skey).
+
+    cardano-cli shelley transaction calculate-min-fee \
+        --tx-body-file tx.raw \
+        --tx-in-count 1 \
+        --tx-out-count 1 \
+        --mainnet \
+        --witness-count 3 \
+        --byron-witness-count 0 \
+        --protocol-params-file protocol.json
+
+
+Then, using `expr <mybalance> - 500000000 - <minfees>`, we can deduct the remaining amount, and build the full request, which will look like this:
+
+    cardano-cli shelley transaction build-raw \
+        --tx-in <utxo number>#<txix> \
+        --tx-out $(cat /config/keys/payment.addr)+<remaining_amount> \
+        --ttl <current slotNo + 50000> \
+        --fee <minfee> \
+        --out-file tx.raw \
+        --certificate-file /config/keys/pool-registration.cert \
+        --certificate-file /config/keys/delegation.cert
+
+Once this is done, sign the transaction:
+
+    cardano-cli shelley transaction sign \
+        --tx-body-file tx.raw \
+        --signing-key-file /config/keys/payment.skey \
+        --signing-key-file /config/keys/stake.skey \
+        --signing-key-file /config/keys/cold.skey \
+        --mainnet \
+        --out-file tx.signed
+
+And finally, submit it to the blockchain:
+
+    cardano-cli shelley transaction submit \
+        --tx-file tx.signed \
+        --mainnet
+
+Check with `sp-balance` if your amount was deducted from your payment address. If so, congratulation, your stakepool is not registered to the blockchain! You can check on adapools.org if you can see it.
+
+You can also check on cardano-cli. Get your pool id with:
+
+    cardano-cli shelley stake-pool id --verification-key-file /config/keys/cold.vkey
+
+Then:
+
+    cardano-cli shelley query ledger-state --mainnet | grep publicKey | grep <poolid>
+
+should return a non-empty string.
+
+Save your poolid into the backup directory:
+
+    echo <poolid> > poolid
+    sudo mv poolid .backup/keys/
+
+Now we can delete your keys from our node folder:
+
+    sudo rm docker/config/keys/*.skey
+    sudo rm docker/config/keys/*.vkey
+
+Create a .zip encrypted backup for your config folder, and save it somewhere safe.
+
+    sudo zip --encrypt .backup/stakepool.zip docker/config/keys/

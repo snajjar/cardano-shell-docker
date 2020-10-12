@@ -7,16 +7,14 @@ ABS_CURR_DIR=$(realpath $CURR_DIR)
 echo "[*] copying configuration files to docker"
 sudo mkdir -p $ABS_CURR_DIR/docker
 
-if [ $1 == "block" ]
-then
-    echo "Deploying configuration for block-producing node"
+if [ "$1" == "block" ]; then
+    echo "[*] deploying configuration for block-producing node"
     sudo cp -r $ABS_CURR_DIR/config/block $ABS_CURR_DIR/docker/config
-elif [  $1 == "relay" ]
-then
-    echo "Deploying configuration for relay node"
+elif [  "$1" == "relay" ]; then
+    echo "[*] deploying configuration for relay node"
     sudo cp -r $ABS_CURR_DIR/config/relay $ABS_CURR_DIR/docker/config
 else
-    echo "Deploying configuration for local node"
+    echo "[*] deploying configuration for local node"
     sudo cp -r $ABS_CURR_DIR/config/node $ABS_CURR_DIR/docker/config
 fi
 
