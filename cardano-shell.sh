@@ -7,7 +7,7 @@ if [ "$1" == "block" ]
 then
     docker run \
     --network=host \
-    --rm \
+    --restart unless-stopped \
     -v $ABS_CURR_DIR/docker/logs/:/log/ \
     -v $ABS_CURR_DIR/docker/config/:/config/ \
     -v $ABS_CURR_DIR/docker/cmd/:/cmd/ \
@@ -17,7 +17,7 @@ elif [  "$1" == "relay" ]
 then
     docker run \
     --network=host \
-    --rm \
+    --restart unless-stopped \
     -v $ABS_CURR_DIR/docker/logs/:/log/ \
     -v $ABS_CURR_DIR/docker/config/:/config/ \
     -v $ABS_CURR_DIR/docker/cmd/:/cmd/ \

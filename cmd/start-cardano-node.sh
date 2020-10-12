@@ -8,7 +8,6 @@ then
     while true; do
         echo "Starting block-producing node"
         cardano-node run \
-            --restart unless-stopped \
             --topology ${NODE_PATH}/mainnet-topology.json \
             --database-path ${NODE_PATH}/db \
             --socket-path ${NODE_SOCKET_PATH} \
@@ -24,7 +23,6 @@ then
     while true; do
         echo "Starting relay node"
         cardano-node run \
-            --restart unless-stopped \
             --topology ${NODE_PATH}/mainnet-topology.json \
             --database-path ${NODE_PATH}/db \
             --socket-path ${NODE_SOCKET_PATH} \
