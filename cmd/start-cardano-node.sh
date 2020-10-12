@@ -11,7 +11,7 @@ then
             --topology ${NODE_PATH}/mainnet-topology.json \
             --database-path ${NODE_PATH}/db \
             --socket-path ${NODE_SOCKET_PATH} \
-            --host-addr $BLOCK_IP \
+            --host-addr $(dig +short $BLOCK_IP) \
             --port $BLOCK_PORT \
             --config ${NODE_PATH}/mainnet-config.json \
             --shelley-kes-key /config/keys/kes.skey \
@@ -26,7 +26,7 @@ then
             --topology ${NODE_PATH}/mainnet-topology.json \
             --database-path ${NODE_PATH}/db \
             --socket-path ${NODE_SOCKET_PATH} \
-            --host-addr $RELAY_IP \
+            --host-addr $(dig +short $RELAY_IP) \
             --port $RELAY_PORT \
             --config ${NODE_PATH}/mainnet-config.json
     done
@@ -38,7 +38,7 @@ else
             --topology ${NODE_PATH}/mainnet-topology.json \
             --database-path ${NODE_PATH}/db \
             --socket-path ${NODE_SOCKET_PATH} \
-            --host-addr ${NODE_IP} \
+            --host-addr $(dig +short $NODE_IP) \
             --port ${NODE_PORT} \
             --config ${NODE_PATH}/mainnet-config.json
     done
