@@ -23,4 +23,4 @@ export PROMETHEUS_NODE_PORT="13007"
 
 # grafana config
 export GRAFANA_ADMIN_USER="stakepool"
-export GRAFANA_ADMIN_PASSWORD="456stakepool123"
+export GRAFANA_ADMIN_PASSWORD="456stakepool123" # default password, change it later when configuring grafana
