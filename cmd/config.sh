@@ -16,3 +16,11 @@ export BLOCK_PORT="3000"
 
 # required for cardano-node to function correctly
 export CARDANO_NODE_SOCKET_PATH=$NODE_SOCKET_PATH
+
+# prometheus export
+export PROMETHEUS_CARDANO_PORT="13006" # must be configured in mainnet-topology.json
+export PROMETHEUS_NODE_PORT="13007"
+
+# grafana config
+export GRAFANA_ADMIN_USER="stakepool"
+export GRAFANA_ADMIN_PASSWORD="456stakepool123"

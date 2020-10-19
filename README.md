@@ -12,7 +12,7 @@ Cardano-shell-docker is an collection of utilities to simplify access to cardano
 
 Install [docker](https://docs.docker.com/get-docker/), clone this project, then run:
 
-    $ docker build . -t cardano-stakepool
+    $ docker build . -t cardano-shell
 
 On Linux/Mac, from the root of the project, make the utility scripts executables with:
 
@@ -137,10 +137,10 @@ verify that all the files were built correctly (`ll` is alias for `ls -al`):
 
 From your local shell from cardano-shell folder, backup the keys from the container on a local folder with root-restricted read permissions, for later use. From now one, you'll need sudo.
 
-    mkdir .backup
-    cp -r ./docker/config/keys .backup
-    sudo chown -R root .backup
-    sudo chmod -R 400 .backup
+    mkdir -p .backup/secret
+    cp -r ./docker/config/keys .backup/secret
+    sudo chown -R root .backup/secret
+    sudo chmod -R 400 .backup/secret
 
 Create a encrypted archive that you'll backup somewhere. Don't hesitate to [gpg encrypt](https://linuxconfig.org/how-to-encrypt-and-decrypt-individual-files-with-gpg) it if your gpg keys are already securely backed up. Here's a simple way to create an encrypted archive:
 
@@ -176,7 +176,7 @@ Some commands might need the blockchain to be synchronized. The blockchain is se
 First, we need to generate a registration certificate.
 From a `local` shell, Copy the stake.vkey to the docker:
 
-    sudo cp .backup/keys/stake.vkey docker/config/keys/
+    sudo cp .backup/secret/keys/stake.vkey docker/config/keys/
 
 Then from the **cardano-shell**, create the certificate:
 
@@ -186,8 +186,8 @@ Then from the **cardano-shell**, create the certificate:
 
 From the `local` shell, copy it to our backup folder:
 
-    sudo cp docker/config/keys/stake.cert .backup/keys/
-    sudo chmod 400 .backup/keys/stake.cert
+    sudo cp docker/config/keys/stake.cert .backup/secret/keys/
+    sudo chmod 400 .backup/secret/keys/stake.cert
 
 Now, we need to know how much ada we need to send to our payment address. First, go on the cardano-shell a check what are the protocol amounts:
 
@@ -271,8 +271,8 @@ Once run, you should have a tx.raw file in your current folder `/work`. Before s
 
 On your `local` shell, transfer the keys to the docker container:
 
-    sudo cp .backup/keys/payment.skey docker/config/keys/
-    sudo cp .backup/keys/stake.skey docker/config/keys/
+    sudo cp .backup/secret/keys/payment.skey docker/config/keys/
+    sudo cp .backup/secret/keys/stake.skey docker/config/keys/
 
 Then in the cardano shell, sign the transaction:
 
@@ -363,9 +363,9 @@ We can now create our node certificate:
 
 From our local shell, move our files to the backup folder, rebuild our archive zip, and delete the keys from the docker folder:
 
-    sudo cp -r ./docker/config/keys .backup
+    sudo cp -r ./docker/config/keys .backup/secret
     sudo chmod 400 /docker/config/keys/*
-    sudo zip --encrypt .backup/stakepool.zip .backup/keys/
+    sudo zip --encrypt .backup/secret/stakepool.zip .backup/secret/keys/
     sudo rm -rf ./docker/config/keys
 
 </details>
@@ -451,9 +451,9 @@ On the `block` node, pull the project and scp config files, just like for the re
 You need a few additional files to run the block-producing node: the pool keys `kes.skey`, `vrf.skey`, and `node.cert`. Copy them to your block host from `local`:
 
     mkdir poolkeys
-    sudo cp .backup/keys/kes.skey ./poolkeys
-    sudo cp .backup/keys/vrf.skey ./poolkeys
-    sudo cp .backup/keys/node.cert ./poolkeys
+    sudo cp .backup/secret/keys/kes.skey ./poolkeys
+    sudo cp .backup/secret/keys/vrf.skey ./poolkeys
+    sudo cp .backup/secret/keys/node.cert ./poolkeys
     sudo chown -R $(whoami) poolkeys
     scp -r poolkeys/ user@<relay ip>:path/to/repo
     rm -rf poolkeys/
@@ -508,9 +508,9 @@ Finally, we are able to create our stakepool registration certificate. Choose yo
 
 Once you decide those numbers (in lovelace), copy the necessary key files to your docker config
 
-    sudo cp .backup/keys/cold.vkey docker/config/keys/
-    sudo cp .backup/keys/vrf.vkey docker/config/keys/
-    sudo cp .backup/keys/stake.vkey docker/config/keys/
+    sudo cp .backup/secret/keys/cold.vkey docker/config/keys/
+    sudo cp .backup/secret/keys/vrf.vkey docker/config/keys/
+    sudo cp .backup/secret/keys/stake.vkey docker/config/keys/
 
 then create you docker certificate:
 
@@ -538,10 +538,10 @@ Create the delegation certificate (that will be used to honor our pledge)
 
 Once node, backup this file in our backup folder (from our local shell):
 
-    sudo cp docker/config/keys/pool-registration.cert .backup/keys/
-    sudo cp docker/config/keys/delegation.cert .backup/keys/
-    sudo chmod 400 .backup/keys/pool-registration.cert
-    sudo chmod 400 .backup/keys/delegation.cert
+    sudo cp docker/config/keys/pool-registration.cert .backup/secret/keys/
+    sudo cp docker/config/keys/delegation.cert .backup/secret/keys/
+    sudo chmod 400 .backup/secret/keys/pool-registration.cert
+    sudo chmod 400 .backup/secret/keys/delegation.cert
 
 Now, we need to submit our pool-registration.cert and delegation.cert to the blockchain.
 
@@ -558,9 +558,9 @@ Our pool deposit will be 500 ada (~5$ when i'm writing this). We won't need to p
 So, let's build the transaction (same procedure as for registring stake key).
 We will need to use `stake.skey`, `payment.skey` and `cold.skey` to sign the transaction:
 
-    sudo cp .backup/keys/payment.skey docker/config/keys/
-    sudo cp .backup/keys/stake.skey docker/config/keys/
-    sudo cp .backup/keys/cold.skey docker/config/keys/
+    sudo cp .backup/secret/keys/payment.skey docker/config/keys/
+    sudo cp .backup/secret/keys/stake.skey docker/config/keys/
+    sudo cp .backup/secret/keys/cold.skey docker/config/keys/
 
 check your utxo with `sp-balance` and the current ttl with `sp-ttl`.
 
@@ -629,7 +629,7 @@ should return a non-empty string.
 Save your poolid into the backup directory:
 
     echo <poolid> > poolid
-    sudo mv poolid .backup/keys/
+    sudo mv poolid .backup/secret/keys/
 
 Now we can delete your keys from our node folder:
 
@@ -638,7 +638,7 @@ Now we can delete your keys from our node folder:
 
 Create a .zip encrypted backup for your config folder, and save it somewhere safe.
 
-    sudo zip --encrypt .backup/stakepool.zip docker/config/keys/
+    sudo zip --encrypt .backup/secret/stakepool.zip docker/config/keys/
 
 </details>
 
@@ -652,6 +652,10 @@ Over time, you'll gather more funds. You might want to change your pledge, your 
 Proceed like for the initial pool registration, but this time you don't have to pay deposit fees.
 
 </details>
+
+## Topology auto-updating
+
+Configuring a static node will put your node at risk to be disconnected from the main network if your "relay" nodes are disconnected for long enough.
 
 # Thanks and Support
 

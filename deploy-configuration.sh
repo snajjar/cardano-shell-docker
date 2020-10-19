@@ -26,6 +26,6 @@ sudo chmod +x $ABS_CURR_DIR/docker/cmd/*
 
 echo "[*] copying adresses and public keys to docker"
 sudo mkdir -p $ABS_CURR_DIR/docker/config/keys
-sudo cp -r $ABS_CURR_DIR/.backup/keys/stake.addr $ABS_CURR_DIR/docker/config/keys
-sudo cp -r $ABS_CURR_DIR/.backup/keys/payment.addr $ABS_CURR_DIR/docker/config/keys
+sudo cp -r $ABS_CURR_DIR/.backup/secret/keys/stake.addr $ABS_CURR_DIR/docker/config/keys
+sudo cp -r $ABS_CURR_DIR/.backup/secret/keys/payment.addr $ABS_CURR_DIR/docker/config/keys
 
