@@ -56,6 +56,7 @@ then
     docker container rm grafana
     docker run \
     --name grafana \
+    --restart unless-stopped \
     --network=host \
     -v $ABS_CURR_DIR/docker/logs/:/log/ \
     -v $ABS_CURR_DIR/docker/config/:/config/ \
