@@ -4,4 +4,4 @@
 source /cmd/config.sh
 
 touch /logs/prometheus-node-exporter.log
-prometheus-node-exporter --web.listen-address="0.0.0.0:$PROMETHEUS_NODE_PORT" > /logs/prometheus-node-exporter.log 2>&1 &
+pm2 start prometheus-node-exporter --log /logs/prometheus-node-exporter.log -- --web.listen-address="0.0.0.0:$PROMETHEUS_NODE_PORT"

@@ -11,7 +11,7 @@ RUN rm /etc/profile
 
 # Install monitoring tools
 RUN apt-get update -y \
-    && apt-get install -y htop unzip grc dbus prometheus prometheus-node-exporter software-properties-common \
+    && apt-get install -y htop unzip grc dbus prometheus prometheus-node-exporter software-properties-common node.js npm \
     && apt-get clean
 
 # Install Grafana
@@ -20,6 +20,9 @@ RUN curl https://packages.grafana.com/gpg.key | apt-key add - \
     && apt-get update \
     && apt-get install -y grafana \
     && apt-get clean
+
+# Install PM2: process manager to auto-restart prometheus-node-exporter of grafana on crash
+RUN npm install -g pm2
 
 # Expose ports
 ## cardano-node, EKG, Prometheus

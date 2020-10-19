@@ -16,10 +16,4 @@ export GF_SECURITY_ADMIN_PASSWORD="$GRAFANA_ADMIN_PASSWORD"
 
 mkdir -p $GF_PATHS_LOGS
 
-# grafana-server --config /config/monitoring/grafana.ini --homepath /config/monitoring/grafana cfg:default.paths.logs=/logs/
-
-while true; do
-    echo "grafana-server --config $GF_HOMEPATH/grafana.ini --homepath $GF_HOMEPATH cfg:default.paths.logs=$GF_PATHS_LOGS"
-    grafana-server --config $GF_HOMEPATH/grafana.ini --homepath $GF_PATHS_HOME cfg:default.paths.logs=$GF_PATHS_LOGS
-    sleep 5
-done
+pm2-runtime start grafana-server -- --config $GF_HOMEPATH/grafana.ini --homepath $GF_PATHS_HOME cfg:default.paths.logs=$GF_PATHS_LOGS
