@@ -18,6 +18,7 @@ export BLOCK_PORT="3000"
 export CARDANO_NODE_SOCKET_PATH=$NODE_SOCKET_PATH
 
 # prometheus export
+export PROMETHEUS_WEB_PORT="13005"
 export PROMETHEUS_CARDANO_PORT="13006" # must be configured in mainnet-topology.json
 export PROMETHEUS_NODE_PORT="13007"
 

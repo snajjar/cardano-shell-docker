@@ -653,9 +653,100 @@ Proceed like for the initial pool registration, but this time you don't have to 
 
 </details>
 
-## Topology auto-updating
+## Install Monitoring (Prometheus and Grafana)
 
-Configuring a static node will put your node at risk to be disconnected from the main network if your "relay" nodes are disconnected for long enough.
+Prometheus allows to fetch and graph application metrics, Grafana is
+a very nice interface to display and organize all of them.
+
+Best practice is to have a specific `monitoring` node. If you don't want to run one more serveur, use your `relay` node if you want to have your monitoring available from anywhere, as it does not host sensitive files and operations.
+You can also use your `local` node, but if it's not available and connected 24/7, you wont be able to configure efficient alerts.
+
+### Install Prometheus metrics
+
+First, we want to allow our cardano-node to output prometheus metric. Edit `mainnet-config.json` in our `config/relay` and in our `config/block` folder. If you want to test the setup locally, you may also use edit the one in the `config/node` folder.
+
+    "hasPrometheus": [
+        "0.0.0.0",
+        12789
+    ],
+
+Now, edit the `cmd/config.sh` file and set values for our PROMETHEUS and GRAFANA variables. I recommand choosing different ports than the default ones, but you will need to adapt the rest of the tutorial.
+
+    # prometheus export
+    export PROMETHEUS_WEB_PORT="9090"
+    export PROMETHEUS_CARDANO_PORT="12789" # must be configured in mainnet-topology.json
+    export PROMETHEUS_NODE_PORT="12790"
+
+    # grafana config
+    export GRAFANA_ADMIN_USER="myuser"
+    export GRAFANA_ADMIN_PASSWORD="myadminpw" # change it later when configuring grafana
+
+Finally, we need to create the `config/relay/monitoring/prometheus` and `config/block/monitoring/prometheus` folders and add a Prometheus configuration file in it (named `prometheus.yml`). Upon the presence of this file, cardano-shell will automatically start a prometheus-node-exporter (for system metrics) and a prometheus server on your node.
+
+    global:
+        scrape_interval:     15s
+        external_labels:
+            monitor: 'codelab-monitor'
+
+    scrape_configs:
+      - job_name: 'cardano' # To scrape data from the cardano node
+          scrape_interval: 5s
+          static_configs:
+          - targets: ['127.0.0.1:12789']
+      - job_name: 'node' # To scrape data from a node exporter to monitor your linux host metrics.
+        scrape_interval: 5s
+        static_configs:
+        - targets: ['127.0.0.1:12790']
+
+Once done, prometheus can be run. Don't forget to deploy your configuration again.
+On relay node:
+
+    ./deploy-configuration.sh relay
+    ./cardano-shell.sh relay
+
+On block node:
+
+    ./deploy-configuration.sh block
+    ./cardano-shell.sh block
+
+You can verify that prometheus is running correctly by accessing the http://\<your-node-ip>:9090 interface. Verify on the `Status->targets` menu that both your `cardano` and `node` endpoints are up.
+
+On your firewall configuration, you don't need to open the 12789 and 12790 ports since thoses are fetched by the local prometheus server. But you will need to allow the `9090` port (prometheus web interface) to be accessible from your `monitoring` node to your `relay` and `block` node.
+
+### Installing Grafana
+
+On your `monitoring` node, create the `config/node/monitoring/grafana` folder and add `grafana.ini` file on it. If you are using your `relay` node as `monitoring` node, use the `config/relay/monitoring/grafana` folder instead.
+
+You can fetch the [default grafana configuration file](https://raw.githubusercontent.com/grafana/grafana/master/conf/defaults.ini) for this matter and adapt it to your needs.
+You don't need to spend too much time on this file, since you will be able to perform most of your configuration from the Grafana web interface.
+
+Note that uncommenting the `;http_port = 3000` line will allow you to choose your port.
+If you have a `https` certificate, add the files to the configuration folder and configure `https` as the default protocol of Grafana (from /config/) folder. It's also possible to [configure Grafana with let's encrypt](https://blog.hackzenwerk.org/2019/05/13/setup-grafana-on-ubuntu-18-04-with-letsencrypt/), but that's out of the scope of this tutorial. Don't hesitate to modify the scripts on this repo for that.
+
+You can now run your grafana server with
+
+    ./deploy-configuration.sh node # use ./deploy-configuration relay if using your relay node
+    ./cardano-sell.sh grafana
+
+This will launch grafana in the cardano-shell container. As usual with docker, use `<ctrl>+P <ctrl>+Q` to detach.
+
+You can now access the Grafana web interface from `http://<monitoring-node-ip>:<grafana-port>`
+
+From the web interface, add your prometheus urls as datasources: from the menu, select the `settings` icon and click on the `Data Sources` submenu. Then click on the `Add data source` submenu. Select `Prometheus`, then enter the prometheus web url (without a trailing slash: `http://<relay-ip>:<prometheus-port>`) of your relay node. Keep 'Server' access. Set `prometheus-relay` as name for this datasource. Validate. Repeat the operation with the block node, with `prometheus-block` as name for the datasource.
+
+Now that both your datasources are added to Grafana, the last step is to configure your dahsboard. From the [Cardano ops repository](https://raw.githubusercontent.com/input-output-hk/cardano-ops/ea161f35792e74b41efa749085ead64c901f784d/modules/grafana/cardano/cardano-application-dashboard-v2.json), fetch the cardano-application-dashboard-v2.json file. It's a nice preconfiguration.
+
+Edit it, find and replace all occurences of the `"datasource": "prometheus",` string and replace with `"datasource": "prometheus-relay",`. At the end of the file, change the `title` field with your Dashboard title for the relay node, and change the `uid` field to something unique.
+
+You can now import the Dashboard by cliquing on the `+` icon -> import.
+
+Repeat the same operation for the `block` dashboard, changing datasources to `"datasource": "prometheus-block",`, and selecting a different `title` and `uid` fields.
+
+On your new dashboards, you should see incoming data within 1 minute.
+
+<!-- ## Topology auto-updating
+
+Configuring a static node will put your node at risk to be disconnected from the main network if your "relay" nodes are disconnected for long enough. -->
 
 # Thanks and Support
 
