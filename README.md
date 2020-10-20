@@ -655,6 +655,9 @@ Proceed like for the initial pool registration, but this time you don't have to 
 
 ## Install Monitoring (Prometheus and Grafana)
 
+<details>
+<summary>Expand for detailed procedure</summary>
+
 Prometheus allows to fetch and graph application metrics, Grafana is
 a very nice interface to display and organize all of them.
 
@@ -743,6 +746,8 @@ You can now import the Dashboard by cliquing on the `+` icon -> import.
 Repeat the same operation for the `block` dashboard, changing datasources to `"datasource": "prometheus-block",`, and selecting a different `title` and `uid` fields.
 
 On your new dashboards, you should see incoming data within 1 minute.
+
+</details>
 
 <!-- ## Topology auto-updating
 
