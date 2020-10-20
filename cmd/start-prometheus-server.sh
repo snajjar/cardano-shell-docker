@@ -8,4 +8,8 @@ export PROMETHEUS_DIR=/config/monitoring/prometheus/
 mkdir -p $PROMETHEUS_DIR/data
 sleep 3
 
-pm2 start prometheus --log /logs/prometheus.logs -- --config.file=$PROMETHEUS_DIR/prometheus.yml --storage.tsdb.path=$PROMETHEUS_DIR/data
+if [ -f "/config/monitoring/prometheus/prometheus.yml" ]; then
+    pm2 start prometheus --log /logs/prometheus.logs -- --config.file=$PROMETHEUS_DIR/prometheus.yml --storage.tsdb.path=$PROMETHEUS_DIR/data
+else
+    echo "No $PROMETHEUS_DIR/prometheus.yml file, not starting prometheus server"
+fi

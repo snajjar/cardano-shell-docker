@@ -5,6 +5,7 @@ ABS_CURR_DIR=$(realpath $CURR_DIR)
 
 if [ "$1" == "block" ]
 then
+    docker container rm block-producer 2> /dev/null
     docker run \
     --name block-producer \
     --network=host \
@@ -17,6 +18,7 @@ then
     -it kunkka7/cardano-shell:latest -c 'source /cmd/config.sh; /cmd/start-node-with-shell.sh block'
 elif [  "$1" == "relay" ]
 then
+    docker container rm relay 2> /dev/null
     docker run \
     --name relay \
     --network=host \
@@ -41,10 +43,11 @@ then
     -it kunkka7/cardano-shell:latest -c 'source /cmd/config.sh; /cmd/start-node-with-shell.sh'
 elif [  "$1" == "prometheus" ]
 then
+    docker container rm prometheus 2> /dev/null
     docker run \
     --name prometheus \
     --network=host \
-    --rm \
+    --restart unless-stopped \
     -v $ABS_CURR_DIR/docker/logs/:/log/ \
     -v $ABS_CURR_DIR/docker/config/:/config/ \
     -v $ABS_CURR_DIR/docker/cmd/:/cmd/ \
@@ -53,7 +56,7 @@ then
     -it kunkka7/cardano-shell:latest -c 'source /cmd/config.sh; /cmd/start-prometheus-server.sh'
 elif [  "$1" == "grafana" ]
 then
-    docker container rm grafana
+    docker container rm grafana 2> /dev/null
     docker run \
     --name grafana \
     --restart unless-stopped \
