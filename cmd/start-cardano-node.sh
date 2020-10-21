@@ -22,6 +22,9 @@ elif [  "$1" == "relay" ]
 then
     while true; do
         echo "Starting relay node"
+        if [ "$2" == "autotopology" ]; then
+
+        fi
         cardano-node run \
             --topology ${NODE_PATH}/mainnet-topology.json \
             --database-path ${NODE_PATH}/db \
