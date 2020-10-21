@@ -9,6 +9,7 @@ export NODE_PORT="3000"
 # cardano-node relay configuration
 export RELAY_IP="relay.stakepool.fr"
 export RELAY_PORT="3000"
+export RELAY_USE_TOPOLOGY_UPDATER=1
 
 # cardano-node block-producer configuration
 export BLOCK_IP="block.stakepool.fr"

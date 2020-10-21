@@ -1,9 +1,9 @@
 from arradev/cardano-node
-LABEL maintainer="seb@stakepool.fr"
+LABEL maintainer="contact@stakepool.fr"
 SHELL ["/bin/bash", "-c"]
 
 # ENV variables
-ENV PATH="/root/.cabal/bin/:/scripts/:/scripts/functions/:/cardano-node/scripts/:${PATH}"
+ENV PATH="/root/.cabal/bin:/scripts:/scripts/functions:/cardano-node/scripts:${PATH}"
 ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
 
 # Remove /etc/profile, so it doesn't mess up our PATH env
