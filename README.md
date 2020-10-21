@@ -10,13 +10,66 @@ Cardano-shell-docker is an collection of utilities to simplify access to cardano
 
 # Installation / setup of cardano-shell
 
-Install [docker](https://docs.docker.com/get-docker/), clone this project, then run:
+Install [docker](https://docs.docker.com/get-docker/), clone this project, then run pull the docker image
 
-    $ docker build . -t cardano-shell
+    docker pull kunkka7/cardano-shell
+
+or built it directly from the Dockerfile
+
+    $ docker build . -t kunkka7/cardano-shell
 
 On Linux/Mac, from the root of the project, make the utility scripts executables with:
 
     $ chmod +x *.sh
+
+Then, create in the `config` folder a `config.sh` file:
+
+    #!/usr/bin/env bash
+
+    # cardano-node simple configuration for local use
+    export NODE_PATH="/config"
+    export NODE_SOCKET_PATH="$NODE_PATH/node.socket"
+    export NODE_IP="127.0.0.1"
+    export NODE_PORT="3000"
+
+    # cardano-node relay configuration
+    export RELAY_IP="<my-relay-ip>"
+    export RELAY_PORT="<my-relay-port>"
+    export RELAY_USE_TOPOLOGY_UPDATER=1
+
+    # cardano-node block-producer configuration
+    export BLOCK_IP="<my-core-node-ip>"
+    export BLOCK_PORT="3000"
+
+    # prometheus export
+    export PROMETHEUS_WEB_PORT="9090"
+    export PROMETHEUS_CARDANO_PORT="12789" # must be configured in mainnet-topology.json
+    export PROMETHEUS_NODE_PORT="12790"
+
+    # grafana config
+    export GRAFANA_ADMIN_USER="admin"
+    export GRAFANA_ADMIN_PASSWORD="cardano-is-great" # default password, change it later when configuring grafana
+
+    # required for cardano-node to function correctly
+    export CARDANO_NODE_SOCKET_PATH=$NODE_SOCKET_PATH
+
+Adapt and adjust this config file, don't hesitate to change ports, but keep in mind that you'll have to adjust your firewall rules accordingly.
+This config file will be sourced in every shell opened in the docker environment with cardano-shell.
+
+# Deploying configuration
+
+In this tutorial, you'll launch several cardano-shell on different machines, a `local` machine to create your private keys and test stuff, a `relay` machine which will be your stakepool relay, and a `block-producing` machine which will be your core node that add blocks to the cardano blockchain.
+
+For each of theses machines, you will deploy different configurations from the `config` folder, `config/node`, `config/relay` and `config/block`.
+It's recommanded to keep on your local machine all the different configurations, then copy the appropriate config to each node with `scp -r`.
+
+Once in the config folder, you can easily deploy your files to the docker environment with the `./deploy-configuration.sh` script, that basically, move stuff to the `docker` folder at the right location.
+
+Before using cardano-shell on your each node, and each time after changing a config file, you'll need to deploy your new config to the docker environment with:
+
+    ./deploy-configuration <node|relay|block>
+
+If used without arguments, it will deploy the `config/node` folder. Since the docker folder is/will be priviledged, this script use sudo. Read it before you use it.
 
 # Launching a cardano-shell
 
@@ -42,7 +95,7 @@ In the `config/node` folder, fetch the mainnet node config files from IOHK:
 
 If it's your first time running the cardano-shell with a node, run the deployment script (that will export scripts and configuration to the docker folder):
 
-    $ ./deploy-configuration.sh
+    $ ./deploy-configuration.sh node
 
 Anytime you wish to change the node configuration, modify the .json files in the `config/node` folder, then run `deploy-configuration.sh` again.
 
@@ -772,6 +825,10 @@ You can also test it on your local node with the following:
 In the new shell, try `crontab -l` command to see if the crontask is correctly defined. You can also run `/cmd/topologyUpdater.sh` manually and `cat /config/mainnet-topology.json` to verify that your block-producing node and the IOHK relay are present.
 
 </details>
+
+## Firewalling
+
+[Coming Soon]
 
 # Thanks and Support
 
