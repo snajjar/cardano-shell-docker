@@ -749,9 +749,29 @@ On your new dashboards, you should see incoming data within 1 minute.
 
 </details>
 
-<!-- ## Topology auto-updating
+## Topology auto-update
 
-Configuring a static node will put your node at risk to be disconnected from the main network if your "relay" nodes are disconnected for long enough. -->
+<details>
+<summary>Expand for detailed procedure</summary>
+
+Configuring a static node will put your node at risk to be disconnected from the main network if your "relay" nodes are disconnected for long enough.
+
+To avoid this situation, most stake pool operators use a script to update the `topology.json` file on a daily or hourly basis.
+
+cardano-shell-docker implements a auto-updating topology option to be used on the relay as such:
+
+    ./cardano-shell.sh relay autotopology
+
+Launching shell with the autotopology option will make it add a crontab to run the `/cmd/topologyUpdater.sh` script every day.
+This script fetch 20 relay nodes from adapools, replacing the first one with your block-producing node (as defined in with `BLOCK_IP` and `BLOCK_PORT` env var in `/cmd/config.sh`, and replacing the second one with IOHK relay)
+
+You can also test it on your local node with the following:
+
+    ./cardano-shell node autotopology
+
+In the new shell, try `crontab -l` command to see if the crontask is correctly defined. You can also run `/cmd/topologyUpdater.sh` manually and `cat /config/mainnet-topology.json` to verify that your block-producing node and the IOHK relay are present.
+
+</details>
 
 # Thanks and Support
 
