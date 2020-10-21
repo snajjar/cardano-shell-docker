@@ -8,7 +8,7 @@ curl -s -o /config/topologyUpdateAdaPools.json https://a.adapools.org/topology?l
 echo $(jq ".Producers[1] |= . + {\"type\": \"regular\", \"addr\": \"relays-new.cardano-mainnet.iohk.io\", \"port\": \"3001\", \"valency\": \"1\"}" /config/topologyUpdateAdaPools.json) > /config/topologyUpdateAdaPools.json
 echo $(jq ".Producers[0] |= . + {\"type\": \"regular\", \"addr\": \"$BLOCK_IP\", \"port\": \"$BLOCK_PORT\", \"valency\": \"2\"}" /config/topologyUpdateAdaPools.json) > /config/topologyUpdateAdaPools.json
 echo $(jq . /config/topologyUpdateAdaPools.json) > /config/topologyUpdateAdaPools.json
-mv /config/topologyUpdateAdaPools.json /config/mainnet-topology.sh
+mv /config/topologyUpdateAdaPools.json /config/mainnet-topology.json
 
 # kill the cardano-node (it will restart automatically)
 killall cardano-node
