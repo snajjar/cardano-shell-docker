@@ -3,6 +3,20 @@
 # get all configuration env var
 source /cmd/config.sh
 
+# if the autotopology argument is used, add a crontask
+if [ "$2" == "autotopology" ]; then
+    echo "Starting cardano-node WITH auto-updating topology"
+    # add a new crontab
+    crontab -l > /config/topologycron
+    #echo new cron into cron file
+    echo "0 1 * * * /cmd/topologyUpdater.sh" >> /config/topologycron
+    #install new cron file
+    crontab /config/topologycron
+    rm /config/topologycron
+else
+    echo "Starting cardano-node WITHOUT auto-updating topology"
+fi
+
 if [ "$1" == "block" ]
 then
     while true; do
@@ -22,9 +36,6 @@ elif [  "$1" == "relay" ]
 then
     while true; do
         echo "Starting relay node"
-        if [ "$2" == "autotopology" ]; then
-
-        fi
         cardano-node run \
             --topology ${NODE_PATH}/mainnet-topology.json \
             --database-path ${NODE_PATH}/db \
@@ -36,6 +47,8 @@ then
 else
     # Running in loop allows for restarting without restarting the container
     while true; do
+
+
         echo "Starting cardano-node"
         cardano-node run \
             --topology ${NODE_PATH}/mainnet-topology.json \
