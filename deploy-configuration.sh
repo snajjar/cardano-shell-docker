@@ -5,7 +5,9 @@ ABS_CURR_DIR=$(realpath $CURR_DIR)
 
 # Get configuration files
 echo "[*] copying configuration files to docker"
-sudo mkdir -p $ABS_CURR_DIR/docker
+sudo mkdir -p $ABS_CURR_DIR/docker/cmd
+
+sudo cp $ABS_CURR_DIR/config/config.sh $ABS_CURR_DIR/docker/cmd/
 
 if [ "$1" == "block" ]; then
     echo "[*] deploying configuration for block-producing node"

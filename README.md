@@ -1,4 +1,4 @@
-# Cardano-shell-docker: docker-based image to run a stakepool
+# Cardano-shell-docker: docker-based image to run a Cardano Stake Pool
 
 Cardano-shell-docker is an collection of utilities to simplify access to cardano-node and cardano-cli from a docker environment. No need to install from source, with specific version of ghc, libsodium and other specific libraries and build tools that might hard to build on your system, or that could break your package manager dependencies.
 
@@ -758,7 +758,7 @@ Configuring a static node will put your node at risk to be disconnected from the
 
 To avoid this situation, most stake pool operators use a script to update the `topology.json` file on a daily or hourly basis.
 
-cardano-shell-docker implements a auto-updating topology option to be used on the relay as such:
+cardano-shell-docker implements a auto-updating topology option. To use it on the relay, instead of the `./cardano-shell.sh relay` command to launch the relay node, use:
 
     ./cardano-shell.sh relay autotopology
 
@@ -775,9 +775,9 @@ In the new shell, try `crontab -l` command to see if the crontask is correctly d
 
 # Thanks and Support
 
-If you would like to support the maintainance of this project:
-- deleguate to stakepool.fr pool [SPFR]
-- install Brave browser from my [referral link](https://brave.com/sna144). It's a privacy-oriented ad-blocking browser forked from chrome, that let you mine cryptocurrency if you accept ads.
+If you would like to support this project:
+- deleguate to stakepool.fr pool [ticker: SPFR]
+- install Brave browser from my [referral link](https://brave.com/sna144). It's a privacy-oriented ad-blocking browser forked from chrome, that let you mine cryptocurrency in exchange for displaying ads. No personal data are sent, it stays locally in your browser.
 - Donations are also appreciated:
   - ADA: DdzFFzCqrht8ZdbpE6zKwNegme7TjAtVBw2t4abuqRshNhobiAw3ND5NuC5fhuHhPg8LTk5wX5BdgZXYrqwfnnfncfafyzbrE7zdPBz5
   - BTC: 1NmoNTcA1qRannogf1ycHqte6cYqLvZSEo
