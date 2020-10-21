@@ -828,7 +828,33 @@ In the new shell, try `crontab -l` command to see if the crontask is correctly d
 
 ## Firewalling
 
-[Coming Soon]
+Most providers will provide a firewall interface to filter traffic from and to your nodes. However, if it's not the case, you can use `iptables`. If you don't know how to use it, there are many excellent ressources on the internet. [Here is one](https://www.linode.com/docs/security/firewalls/control-network-traffic-with-iptables/). Note that this must not be configured in the cardano-shell docker environment, but in the host machine.
+
+Here are the rules that we want to allow (according to your config):
+
+    On relay:
+        Inbound:
+            All ICMP traffic
+            All TCP traffic to [ssh port]
+            All TCP traffic to [cardano-node port]
+            All TCP traffic to [grafana-web-interface port]
+        Outbound:
+            All ICMP traffic
+            All TCP traffic
+            All UDP traffic
+
+    On block:
+        Inbound:
+            All TCP traffic to [ssh port] # unless you have a fixed ip to operate from
+            [relay ip] TCP traffic to [cardano-node port]
+            [relay ip] TCP traffic to [prometheus port]
+
+        Outbound:
+            All ICMP traffic
+            All TCP traffic
+            All UDP traffic
+
+On a security matter, note that it may be a good idea to change all default ports, to complicate service identifications. Attackers usually need to identify what service your machine is running, to be able to build attacks (brute force, exploit attack, DoS, misconfiguration abuse, etc), using [fingerprinting techniques with tools like nmap](https://nmap.org/book/vscan.html). Changing default port helps to complicate this process, and also helps against attacks scanning randomly ip-ranges for service-specific vulnerability.
 
 # Thanks and Support
 
