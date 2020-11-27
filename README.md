@@ -120,8 +120,6 @@ For that matter, the recommanded configuration is 3 hosts:
 
 ## Understanding keys and addresses files
 
-<details>
-<summary>Expand if you need to understand what are the different files</summary>
 Generation procedures for keys and addresses usually output 3 files:
 - file.skey: private signing key, SHOULD NEVER BE ONLINE
 - file.vkey: public verification key, used in many procedures. Keep it offline too for best security
@@ -130,12 +128,9 @@ Generation procedures for keys and addresses usually output 3 files:
 You'll generate a payment keypair/address, to honor your stakepool pledge, and a stake keypair/address, that will receive the rewards for your participation in the cardano blockchain.
 
 Recommandation: Backup theses 3 files to a seperate secure location, never put it online (at least unencrypted).
-</details>
 
 ## Generating payment keys/address and stake keys/address
 
-<details>
-<summary>Expand for detailed procedure</summary>
 This procedure is for shelley mainnet. For testnet, replace in following commands `--mainnet` with `--testnet-magic 42`.
 
 From `local` do the following:
@@ -208,12 +203,8 @@ Once done, delete the config/keys folders:
 
 Whenever we need to use some keys, we'll copy them our backup folder to docker, use them, then delete the files again.
 
-</details>
-
 ## Registering the stake address in the blockchain
 
-<details>
-<summary>Expand for detailed procedure</summary>
 We will need to register our stake address with a transaction, meaning we'll have to pay for the transaction fee. It'll require interacting with the blockchain, you'll need to have a **running** and **synchronized** node.
 
 First, deploy the node configuration (if you haven't done it yet)
@@ -351,12 +342,8 @@ When done, don't forget to delete the keys from your docker directory:
     sudo rm -rf docker/config/keys/*.skey
     sudo rm -rf docker/config/keys/*.vkey
 
-</details>
 
 ## Generate our stake pool keys and certificate
-
-<details>
-<summary>Expand for detailed procedure</summary>
 
 On your `local` machine, perform the following procedure.
 
@@ -421,14 +408,11 @@ From our local shell, move our files to the backup folder, rebuild our archive z
     sudo zip --encrypt .backup/secret/stakepool.zip .backup/secret/keys/
     sudo rm -rf ./docker/config/keys
 
-</details>
 
 Save your stakepool.zip archive to a cold secure location.
 
 ## Configure the relay and block-producer nodes
 
-<details>
-<summary> Expand for detailed procedure </summary>
 
 ### Configure topology files for block-producing and relay nodes.
 
@@ -526,12 +510,8 @@ Once started, you can delete the pool keys again:
     rm -rf docker/config/keys/*.skey
     rm -rf docker/config/keys/node.cert
 
-</details>
 
 ## Register the stakepool metadata
-
-<details>
-<summary>Expand for detailed procedure</summary>
 
 Create a .json file with your stakepool info
 
@@ -693,23 +673,14 @@ Create a .zip encrypted backup for your config folder, and save it somewhere saf
 
     sudo zip --encrypt .backup/secret/stakepool.zip docker/config/keys/
 
-</details>
-
 ## Update the stakepool parameters
-
-<details>
-<summary>Expand for detailed procedure</summary>
 
 Over time, you'll gather more funds. You might want to change your pledge, your margin, or some of your metadata.
 
 Proceed like for the initial pool registration, but this time you don't have to pay deposit fees.
 
-</details>
 
 ## Install Monitoring (Prometheus and Grafana)
-
-<details>
-<summary>Expand for detailed procedure</summary>
 
 Prometheus allows to fetch and graph application metrics, Grafana is
 a very nice interface to display and organize all of them.
@@ -800,12 +771,7 @@ Repeat the same operation for the `block` dashboard, changing datasources to `"d
 
 On your new dashboards, you should see incoming data within 1 minute.
 
-</details>
-
 ## Topology auto-update
-
-<details>
-<summary>Expand for detailed procedure</summary>
 
 Configuring a static node will put your node at risk to be disconnected from the main network if your "relay" nodes are disconnected for long enough.
 
@@ -823,8 +789,6 @@ You can also test it on your local node with the following:
     ./cardano-shell node autotopology
 
 In the new shell, try `crontab -l` command to see if the crontask is correctly defined. You can also run `/cmd/topologyUpdater.sh` manually and `cat /config/mainnet-topology.json` to verify that your block-producing node and the IOHK relay are present.
-
-</details>
 
 ## Firewalling
 
