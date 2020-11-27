@@ -860,7 +860,6 @@ On a security matter, note that it may be a good idea to change all default port
 
 If you would like to support this project:
 - deleguate to stakepool.fr pool [ticker: SPFR]
-- install Brave browser from my [referral link](https://brave.com/sna144). It's a privacy-oriented ad-blocking browser forked from chrome, that let you mine cryptocurrency in exchange for displaying ads. No personal data are sent, it stays locally in your browser.
 - Donations are also appreciated:
   - ADA: DdzFFzCqrht8ZdbpE6zKwNegme7TjAtVBw2t4abuqRshNhobiAw3ND5NuC5fhuHhPg8LTk5wX5BdgZXYrqwfnnfncfafyzbrE7zdPBz5
   - BTC: 1NmoNTcA1qRannogf1ycHqte6cYqLvZSEo
