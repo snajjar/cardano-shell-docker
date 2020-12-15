@@ -22,6 +22,9 @@ fi
 
 sudo cp -r $ABS_CURR_DIR/ressources $ABS_CURR_DIR/docker/
 
+echo "[*] copying RTView configuration to docker"
+mkdir -p $ABS_CURR_DIR/docker/config/monitoring/
+
 echo "[*] copying run scripts to docker"
 sudo cp -r $ABS_CURR_DIR/cmd $ABS_CURR_DIR/docker/
 sudo chmod +x $ABS_CURR_DIR/docker/cmd/*

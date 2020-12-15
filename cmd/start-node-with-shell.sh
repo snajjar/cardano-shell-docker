@@ -13,6 +13,6 @@ tmux kill-session -t $SESSION
 tmux new-session -s "$SESSION" "/bin/bash" \; \
     split-window -d -h "/cmd/start-cardano-node.sh $1 $2" \; \
     split-window -t $SESSION:0.1 -d -v "/bin/bash" \; \
-    send-keys -t $SESSION:0.2 "sleep 3; /cmd/start-prometheus-exporter.sh; /cmd/start-prometheus-server.sh; grc tail -f /logs/node.log" Enter \;
+    send-keys -t $SESSION:0.2 "sleep 3; /cmd/start-prometheus-exporter.sh; /cmd/start-prometheus-server.sh; /cmd/start-rtview.sh; grc tail -f /logs/node.log" Enter \;
 
 

@@ -98,6 +98,15 @@ RUN echo "Building tags/$VERSION..." \
     && rm -rf /root/.cabal/store/ghc-8.6.5 \
     && rm -rf /cardano-node/dist-newstyle/
 
+# Install RTView
+RUN mkdir /RTView \
+    && cd RTView \
+    && wget https://github.com/input-output-hk/cardano-rt-view/releases/download/0.2.0/cardano-rt-view-0.2.0-linux-x86_64.tar.gz \
+    && tar xzvf cardano-rt-view-0.2.0-linux-x86_64.tar.gz \
+    && rm cardano-rt-view-0.2.0-linux-x86_64.tar.gz
+
+ENV PATH="/RTView/:${PATH}"
+
 # Remove /etc/profile, so it doesn't mess up our PATH env
 RUN rm /etc/profile
 
@@ -107,6 +116,6 @@ VOLUME /config/
 
 # Expose ports
 ## cardano-node, EKG, Prometheus
-EXPOSE 3000 12788 12798 13006 13007
+EXPOSE 3000 12788 12798 13005 13006 13007
 
 ENTRYPOINT ["/bin/bash", "-l"]
