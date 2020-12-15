@@ -528,7 +528,7 @@ Upload it to an url that is less that 65 characters long (you can use `gist`  an
 
 cp that file to the docker/config/ folder so we can access it from our cardano-shell
 
-    cp metadata.json docker/config/
+    sudo cp ./config/metadata.json docker/config/
 
 Then from your local cardano-shell, get the hash:
 
@@ -569,7 +569,7 @@ Create the delegation certificate (that will be used to honor our pledge)
         --cold-verification-key-file /config/keys/cold.vkey \
         --out-file /config/keys/delegation.cert
 
-Once node, backup this file in our backup folder (from our local shell):
+Once done, backup this file in our backup folder (from our local shell):
 
     sudo cp docker/config/keys/pool-registration.cert .backup/secret/keys/
     sudo cp docker/config/keys/delegation.cert .backup/secret/keys/
@@ -828,6 +828,5 @@ If you would like to support this project:
   - ADA: DdzFFzCqrht8ZdbpE6zKwNegme7TjAtVBw2t4abuqRshNhobiAw3ND5NuC5fhuHhPg8LTk5wX5BdgZXYrqwfnnfncfafyzbrE7zdPBz5
   - BTC: 1NmoNTcA1qRannogf1ycHqte6cYqLvZSEo
   - ETH: 0xa2d717472e7de75a3b46f96d3fcfd1ff861be895
-
 
 Shoutout to [abracadaniel](https://github.com/abracadaniel/cardano-node-docker) for his work (providing a good base).
