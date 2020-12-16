@@ -8,6 +8,7 @@ then
     # block: start prometheus exporter and server
     /cmd/start-prometheus-exporter.sh;
     /cmd/start-prometheus-server.sh;
+    /cmd/start-rtview.sh
 elif [  "$1" == "relay" ]
 then
     # relay: start prometheus exporter, server and RTView
