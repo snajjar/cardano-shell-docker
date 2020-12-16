@@ -691,6 +691,146 @@ a very nice interface to display and organize all of them.
 Best practice is to have a specific `monitoring` node. If you don't want to run one more serveur, use your `relay` node if you want to have your monitoring available from anywhere, as it does not host sensitive files and operations.
 You can also use your `local` node, but if it's not available and connected 24/7, you wont be able to configure efficient alerts.
 
+### Setting up RTView
+
+Since the LiveView mode has been deleted, we need to set up RTView if we want to see live metrics on our nodes.
+
+To set it up, create in each monitoring directory `config/node/monitoring`, `config/relay/monitoring` and `config/block/monitoring`) a file named `RTView.json`. Upon the presence of this file, a RTView server will be started when you start `./cardano-shell.sh [node|block|relay]`.
+
+The HTTP server will be launched at the port specified with the `RTVIEW_PORT` environment variable from your `/config/config.sh` script.
+
+Of course, you need to adapt this file to your local cardano-node port.
+
+    {
+        "rotation": null,
+        "defaultBackends": ["KatipBK"],
+        "setupBackends": ["KatipBK", "LogBufferBK", "TraceAcceptorBK"],
+        "hasPrometheus": null,
+        "hasGraylog": null,
+        "hasGUI": null,
+        "traceForwardTo": null,
+        "traceAcceptAt": [{
+            "remoteAddr": {
+                "tag": "RemoteSocket",
+                "contents": ["0.0.0.0", "3000"]
+            },
+            "nodeName": "block"
+        }],
+        "defaultScribes": [
+            ["StdoutSK", "stdout"]
+        ],
+        "options": {
+            "mapBackends": {
+                "cardano-rt-view.acceptor": ["LogBufferBK", {
+                    "kind": "UserDefinedBK",
+                    "name": "ErrorBufferBK"
+                }]
+            }
+        },
+        "setupScribes": [{
+            "scMaxSev": "Emergency",
+            "scName": "/logs/rtview.log",
+            "scRotation": null,
+            "scMinSev": "Notice",
+            "scKind": "FileSK",
+            "scFormat": "ScText",
+            "scPrivacy": "ScPublic"
+        }],
+        "hasEKG": null,
+        "forwardDelay": null,
+        "minSeverity": "Info"
+    }
+
+Now, we need to update our `config/[node|relay|block]/mainnet-config.json` files to forward our metrics to our RTView server.
+
+First, Make sure you set `TurnOnLogMetrics` to `true`.
+
+Second, Add the TraceForwarderBK Backend as such:
+
+    "setupBackends": [
+        "KatipBK",
+        "TraceForwarderBK"
+    ],
+
+Third, configure your metrics to be handled by TraceForwarderBK. If you want all of them, use the following configuration:
+
+    "options": {
+        "mapBackends": {
+            "cardano.node.resources": [
+                "EKGViewBK",
+                "TraceForwarderBK"
+            ],
+            "cardano.node-metrics": [
+                "EKGViewBK",
+                "TraceForwarderBK"
+            ],
+            "cardano.node.metrics": [
+                "EKGViewBK",
+                "TraceForwarderBK"
+            ],
+            "cardano.node.BlockFetchDecision.peers": [
+                "EKGViewBK",
+                "TraceForwarderBK"
+            ],
+            "cardano.node.ChainDB.metrics": [
+                "EKGViewBK",
+                "TraceForwarderBK"
+            ],
+            "cardano.node.Forge.metrics": [
+                "EKGViewBK",
+                "TraceForwarderBK"
+            ],
+            "cardano.node.metrics.peersFromNodeKernel": [
+                "TraceForwarderBK"
+            ],
+            "cardano.node.AcceptPolicy": [
+                "TraceForwarderBK"
+            ],
+            "cardano.node.ChainDB": [
+                "TraceForwarderBK"
+            ],
+            "cardano.node.DnsResolver": [
+                "TraceForwarderBK"
+            ],
+            "cardano.node.DnsSubscription": [
+                "TraceForwarderBK"
+            ],
+            "cardano.node.ErrorPolicy": [
+                "TraceForwarderBK"
+            ],
+            "cardano.node.Handshake": [
+                "TraceForwarderBK"
+            ],
+            "cardano.node.IpSubscription": [
+                "TraceForwarderBK"
+            ],
+            "cardano.node.LocalErrorPolicy": [
+                "TraceForwarderBK"
+            ],
+            "cardano.node.LocalHandshake": [
+                "TraceForwarderBK"
+            ],
+            "cardano.node.Mux": [
+                "TraceForwarderBK"
+            ]
+        },
+        ...
+    }
+
+Finally, forward the metrics to our server.
+
+    "traceForwardTo": {
+        "tag": "RemoteSocket",
+        "contents": [
+        "0.0.0.0",
+        "3000"
+        ]
+    }
+
+ In this example, each node forward metrics to it's local server. You can also decide to create 1 RTView server on your `relay` node (or better, in your `monitoring` node), and forward your metrics to it.
+
+ You will just need to adapt the `traceAcceptAt` settings in the RTView.json file and the `traceForwardTo` settings in the mainnet-config.json files.
+
 ### Install Prometheus metrics
 
 First, we want to allow our cardano-node to output prometheus metric. Edit `mainnet-config.json` in our `config/relay` and in our `config/block` folder. If you want to test the setup locally, you may also use edit the one in the `config/node` folder.
