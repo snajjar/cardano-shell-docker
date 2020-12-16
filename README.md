@@ -41,6 +41,9 @@ Then, create in the `config` folder a `config.sh` file:
     export BLOCK_IP="<my-core-node-ip>"
     export BLOCK_PORT="3000"
 
+    # RTView port
+    export RTVIEW_PORT="13004"
+
     # prometheus export
     export PROMETHEUS_WEB_PORT="9090"
     export PROMETHEUS_CARDANO_PORT="12789" # must be configured in mainnet-topology.json
@@ -680,7 +683,7 @@ Over time, you'll gather more funds. You might want to change your pledge, your 
 Proceed like for the initial pool registration, but this time you don't have to pay deposit fees.
 
 
-## Install Monitoring (Prometheus and Grafana)
+## Install Monitoring (RTView, Prometheus and Grafana)
 
 Prometheus allows to fetch and graph application metrics, Grafana is
 a very nice interface to display and organize all of them.
