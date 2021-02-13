@@ -132,7 +132,7 @@ You'll generate a payment keypair/address, to honor your stakepool pledge, and a
 
 Recommandation: Backup theses 3 files to a seperate secure location, never put it online (at least unencrypted).
 
-## Generating payment keys/address and stake keys/address
+## Generating payment keys/address and stake keys/address (HOT)
 
 This procedure is for shelley mainnet. For testnet, replace in following commands `--mainnet` with `--testnet-magic 42`.
 
@@ -608,8 +608,9 @@ Here's our base command for building the transaction:
         --ttl 0 \
         --fee 0 \
         --out-file tx.raw \
-        --certificate-file /config/keys/pool-registration.cert \
-        --certificate-file /config/keys/delegation.cert
+        --certificate-file /config/keys/pool-registration.cert
+
+
 
 For calculating the min fee, we will use a witness count of 3 (since we will sign with payment.skey, stake.skey and cold.skey).
 
@@ -675,6 +676,147 @@ Now we can delete your keys from our node folder:
 Create a .zip encrypted backup for your config folder, and save it somewhere safe.
 
     sudo zip --encrypt .backup/secret/stakepool.zip docker/config/keys/
+
+## Move the Stake Pool Pledge to a Cold Wallet (Ledger/Trezor)
+
+If the stake becomes heavy, it's better to add additionnal security.
+
+Instructions are from here: https://github.com/angelstakepool/add-hw-wallet-owner-to-pool
+
+### Note: wait 2 epochs when you are done before transferring the funds
+
+Important step. We need to move the pledge when the new owner is definitely registered, otherwise it wouldn't count as a pledge. If you moove the funds too soon, you will not meet your pledge at the end of the epochs (since the new address won't be counted) and nobody gets rewards.
+
+### Step 1: create a wallet on Daedalus or Yoroi from your Ledger, put some ADAs on it.
+
+Your hardware wallet will generate the keys from this operation.
+
+### Step 2: use cardano-hw-cli to export public keys
+
+Install:
+
+    git clone https://github.com/vacuumlabs/cardano-hw-cli
+    cd cardano-hw-cli
+    yarn
+    yarn build-tar
+
+Then:
+
+    sudo ./cardano-hw-cli address key-gen \
+        --path 1852H/1815H/0H/2/0 \
+        --verification-key-file hw-stake.vkey \
+        --hw-signing-file hw-stake.hwsfile
+
+Transfer theses new files to the `docker/config/keys/` folder with `./deploy-configuration.sh`
+
+### Step 3: generate a new stake pool certificate, adding a new owner (the hardware wallet) to the stake pool
+
+On the cardano-shell (with node), run
+
+    cardano-cli stake-pool registration-certificate \
+    --cold-verification-key-file /config/keys/cold.vkey \
+    --vrf-verification-key-file /config/keys/vrf.vkey \
+    --pool-pledge <pool pledge> \
+    --pool-cost <pool cost> \
+    --pool-margin <pool margin> \
+    --pool-reward-account-verification-key-file /config/keys/hw-stake.vkey \
+    --pool-owner-stake-verification-key-file /config/keys/stake.vkey \
+    --pool-owner-stake-verification-key-file /config/keys/hw-stake.vkey \
+    --mainnet \
+    --single-host-pool-relay relay.stakepool.fr \
+    --pool-relay-port 3000 \
+    --metadata-url <metadata.json> \
+    --metadata-hash <metadata hash> \
+    --out-file /config/keys/pool-registration.cert
+
+### Step 3: create a transaction and use cardano-hw-cli to sign it
+
+Now, we can create a new transaction to update our stake pool. We will sign it with 4 witnesses.
+Like for updating the registring the stake pool, we need to use an appropriate TTL and fees.
+
+Note: use the appropriate era specifier if required (currently it's --allegra-era)
+
+Draft a first transaction (with 0 and 0 fees). With a ledger hardware wallet (as a security measure), you can only sign with 1 certificate, so we'll use the pool-registration.cert only in this example.
+
+    cardano-cli transaction build-raw \
+        --tx-in <txid>#0 \
+        --tx-out $(cat /config/keys/payment.addr)+0 \
+        --ttl <ttl> \
+        --fee 0 \
+        --out-file tx.raw \
+        --certificate-file /config/keys/pool-registration.cert
+
+Calculate fees with the following:
+
+    cardano-cli query protocol-parameters \
+            --mainnet \
+            --out-file protocol.json
+    cardano-cli transaction calculate-min-fee \
+        --tx-body-file tx.raw \
+        --tx-in-count 1 \
+        --tx-out-count 1 \
+        --mainnet \
+        --witness-count 4 \
+        --byron-witness-count 0 \
+        --protocol-params-file protocol.json
+
+Build your final transaction:
+
+    cardano-cli transaction build-raw \
+        --tx-in <txid>#0 \
+        --tx-out $(cat /config/keys/payment.addr)+<remaining-balance> \
+        --ttl <ttl> \
+        --fee <fee> \
+        --out-file tx.raw \
+        --certificate-file /config/keys/pool-registration.cert
+
+Now create 4 witness files:
+
+    cardano-cli transaction witness \
+    --tx-body-file tx.raw \
+    --signing-key-file /config/keys/cold.skey \
+    --mainnet \
+    --out-file cold.witness
+
+    cardano-cli transaction witness \
+    --tx-body-file tx.raw \
+    --signing-key-file /config/keys/stake.skey \
+    --mainnet \
+    --out-file stake.witness
+
+    cardano-cli transaction witness \
+    --tx-body-file tx.raw \
+    --signing-key-file /config/keys/payment.skey \
+    --mainnet \
+    --out-file cli-payment.witness
+
+
+This last witness can be done from a COLD machine. We'll use cardano-hw-cli instead of cardano-cli to sign this.
+Sudo is probably needed to access to your hardware wallet, do not hesistate to use it.
+
+Adapt the different file paths in the following command, then take the hw-stake.witness file with you back on the HOT machine that will submit the transaction.
+
+    cp tx.raw /config/tx.raw
+    sudo /path/to/cardano-hw-cli transaction witness \
+    --tx-body-file ./docker/config/tx.raw \
+    --hw-signing-file .backup/secret/keys/hw-stake.hwsfile \
+    --mainnet \
+    --out-file ./docker/config/keys/hw-stake.witness
+
+Once you have gathered all the witnesses, assemble the transaction in 1 file, and submit it. All done.
+
+    cardano-cli transaction assemble \
+    --tx-body-file tx.raw \
+    --witness-file cold.witness \
+    --witness-file stake.witness \
+    --witness-file cli-payment.witness \
+    --witness-file /config/keys/hw-stake.witness \
+    --out-file tx.multisign
+
+    cardano-cli transaction submit \
+        --tx-file tx.multisign \
+        --mainnet
+
 
 ## Update the stakepool parameters
 
