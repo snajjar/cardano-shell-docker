@@ -1,7 +1,7 @@
 FROM debian:stable-slim
 
 # version of cardano-node to build
-ARG VERSION=1.24.2
+ARG VERSION=1.25.1
 
 # based on arradev/cardano-node
 LABEL maintainer="contact@stakepool.fr"
@@ -101,9 +101,9 @@ RUN echo "Building tags/$VERSION..." \
 # Install RTView
 RUN mkdir /RTView \
     && cd RTView \
-    && wget https://github.com/input-output-hk/cardano-rt-view/releases/download/0.2.0/cardano-rt-view-0.2.0-linux-x86_64.tar.gz \
-    && tar xzvf cardano-rt-view-0.2.0-linux-x86_64.tar.gz \
-    && rm cardano-rt-view-0.2.0-linux-x86_64.tar.gz
+    && wget https://github.com/input-output-hk/cardano-rt-view/releases/download/0.3.0/cardano-rt-view-0.3.0-linux-x86_64.tar.gz \
+    && tar xzvf cardano-rt-view-0.3.0-linux-x86_64.tar.gz \
+    && rm cardano-rt-view-0.3.0-linux-x86_64.tar.gz
 
 ENV PATH="/RTView/:${PATH}"
 
@@ -116,6 +116,6 @@ VOLUME /config/
 
 # Expose ports
 ## cardano-node, EKG, Prometheus
-EXPOSE 3000 12788 12798 13005 13006 13007
+EXPOSE 3000 8090 12788 12798 13004 13005 13006 13007
 
 ENTRYPOINT ["/bin/bash", "-l"]

@@ -148,19 +148,19 @@ In the shell, create a folder to hold our keys:
 
 generate the payment key pair:
 
-    cardano-cli shelley address key-gen \
+    cardano-cli address key-gen \
       --verification-key-file config/keys/payment.vkey \
       --signing-key-file config/keys/payment.skey
 
 generate the stake key pair:
 
-    cardano-cli shelley stake-address key-gen \
+    cardano-cli stake-address key-gen \
       --verification-key-file stake.vkey \
       --signing-key-file stake.skey
 
 build the payment address:
 
-    cardano-cli shelley address build \
+    cardano-cli address build \
       --payment-verification-key-file /config/keys/payment.vkey \
       --stake-verification-key-file /config/keys/stake.vkey \
       --out-file /config/keys/payment.addr \
@@ -168,7 +168,7 @@ build the payment address:
 
 build the stake address:
 
-    cardano-cli shelley stake-address build \
+    cardano-cli stake-address build \
       --stake-verification-key-file /config/keys/stake.vkey \
       --out-file /config/keys/stake.addr \
       --mainnet
@@ -227,7 +227,7 @@ From a `local` shell, Copy the stake.vkey to the docker:
 
 Then from the **cardano-shell**, create the certificate:
 
-    cardano-cli shelley stake-address registration-certificate \
+    cardano-cli stake-address registration-certificate \
       --stake-verification-key-file /config/keys/stake.vkey \
       --out-file /config/keys/stake.cert
 
@@ -240,7 +240,7 @@ Now, we need to know how much ada we need to send to our payment address. First,
 
     # mkdir /work
     # cd /work
-    # cardano-cli shelley query protocol-parameters \
+    # cardano-cli query protocol-parameters \
         --mainnet \
         --out-file protocol.json
     # grep keyDeposit protocol.json
@@ -252,7 +252,7 @@ Following the [cardano transaction tutorial](https://cardano-foundation.gitbook.
 
 First, query the current utx0 balance using the bashrc alias `sp-balance` or:
 
-    # cardano-cli shelley query utxo --address $(cat /config/keys/payment.addr) --mainnet
+    # cardano-cli query utxo --address $(cat /config/keys/payment.addr) --mainnet
     TxHash                                                               TxIx      Lovelace
     98952480a220f83947fec475c2ff6c4327a18d2798a04fnuv1c49eab307224d8     0         100000000
 
@@ -260,7 +260,7 @@ From theses information, we get our UTX0 number, or TxIx and our current lovelac
 
 First, draft our transaction with these parameters (leaving 0 for the info we don't have yet). Make sure to include the TxIx after the `#`. Save this command in a notepad as we will rework it later.
 
-    cardano-cli shelley transaction build-raw \
+    cardano-cli transaction build-raw \
       --tx-in 98952480a220f83947fec475c2ff6c4327a18d2798a04fnuv1c49eab307224d8#0 \
       --tx-out $(cat /config/keys/payment.addr)+0 \
       --ttl 0 \
@@ -270,7 +270,7 @@ First, draft our transaction with these parameters (leaving 0 for the info we do
 
 Then query the TTL using `sp-ttl` alias or:
 
-    # cardano-cli shelley query tip --mainnet
+    # cardano-cli query tip --mainnet
     {
         "blockNo": 4805198,
         "headerHash": "af0d79958d44342e53b53e2056dfb210c11f76213372fde61739e5e270c8c1d7",
@@ -288,7 +288,7 @@ Usually, adding 10000 or 50000 to the current `slotNo` is a good option.
 
 Now that we have our TTL, let's calculate the last part: the fees (and the remaining amount on our account).
 
-    # cardano-cli shelley transaction calculate-min-fee \
+    # cardano-cli transaction calculate-min-fee \
       --tx-body-file tx.raw \
       --tx-in-count 1 \
       --tx-out-count 1 \
@@ -306,7 +306,7 @@ We've seen earlier that the keyDeposit will be 2000000 lovelaces, so we need to 
 
 Now, we have all informations to draft our final transaction:
 
-    cardano-cli shelley transaction build-raw \
+    cardano-cli transaction build-raw \
       --tx-in 98952480a220f83947fec475c2ff6c4327a18d2798a04fnuv1c49eab307224d8#0 \
       --tx-out $(cat /config/keys/payment.addr)+97827371 \
       --ttl 10911266 \
@@ -323,7 +323,7 @@ On your `local` shell, transfer the keys to the docker container:
 
 Then in the cardano shell, sign the transaction:
 
-    cardano-cli shelley transaction sign \
+    cardano-cli transaction sign \
       --tx-body-file tx.raw \
       --signing-key-file /config/keys/payment.skey \
       --signing-key-file /config/keys/stake.skey \
@@ -332,7 +332,7 @@ Then in the cardano shell, sign the transaction:
 
 You should now have a `tx.signed` file in your local folder. Submit the transaction to the blockchain:
 
-    cardano-cli shelley transaction submit \
+    cardano-cli transaction submit \
       --tx-file tx.signed \
       --mainnet
 
@@ -356,20 +356,20 @@ Start a shell with node:
 
 Generate cold keys for your stakepool:
 
-    cardano-cli shelley node key-gen \
+    cardano-cli node key-gen \
       --cold-verification-key-file /config/keys/cold.vkey \
       --cold-signing-key-file /config/keys/cold.skey \
       --operational-certificate-issue-counter-file /config/keys/cold.counter
 
 Generate a VRF keypair:
 
-    cardano-cli shelley node key-gen-VRF \
+    cardano-cli node key-gen-VRF \
     --verification-key-file /config/keys/vrf.vkey \
     --signing-key-file /config/keys/vrf.skey
 
 Generate a [KES](https://cardano-foundation.gitbook.io/stake-pool-course/stake-pool-guide/stake-pool/kes_period) keypair:
 
-    cardano-cli shelley node key-gen-KES \
+    cardano-cli node key-gen-KES \
     --verification-key-file /config/keys/kes.vkey \
     --signing-key-file /config/keys/kes.skey
 
@@ -397,7 +397,7 @@ In this example, each KES period is 129600 slots. So the current KES period star
 
 We can now create our node certificate:
 
-    cardano-cli shelley node issue-op-cert \
+    cardano-cli node issue-op-cert \
       --kes-verification-key-file kes.vkey \
       --cold-signing-key-file cold.skey \
       --operational-certificate-issue-counter cold.counter \
@@ -535,7 +535,7 @@ cp that file to the docker/config/ folder so we can access it from our cardano-s
 
 Then from your local cardano-shell, get the hash:
 
-    cardano-cli shelley stake-pool metadata-hash --pool-metadata-file /config/metadata.json
+    cardano-cli stake-pool metadata-hash --pool-metadata-file /config/metadata.json
 
 Finally, we are able to create our stakepool registration certificate. Choose your:
 - pool pledge (amount that you will stake. YOU MUST HONOR YOUR PLEDGE)
@@ -550,7 +550,7 @@ Once you decide those numbers (in lovelace), copy the necessary key files to you
 
 then create you docker certificate:
 
-    cardano-cli shelley stake-pool registration-certificate \
+    cardano-cli stake-pool registration-certificate \
         --cold-verification-key-file /config/keys/cold.vkey \
         --vrf-verification-key-file /config/keys/vrf.vkey \
         --pool-pledge <pool pledge> \
@@ -567,7 +567,7 @@ then create you docker certificate:
 
 Create the delegation certificate (that will be used to honor our pledge)
 
-    cardano-cli shelley stake-address delegation-certificate \
+    cardano-cli stake-address delegation-certificate \
         --stake-verification-key-file /config/keys/stake.vkey \
         --cold-verification-key-file /config/keys/cold.vkey \
         --out-file /config/keys/delegation.cert
@@ -585,7 +585,7 @@ Create a work directory for the transaction, get protocol.json and check what ou
 
     # mkdir /work
     # cd /work
-    # cardano-cli shelley query protocol-parameters --mainnet --out-file protocol.json
+    # cardano-cli query protocol-parameters --mainnet --out-file protocol.json
     # grep poolDeposit protocol.json
     "poolDeposit": 500000000,
 
@@ -602,7 +602,7 @@ check your utxo with `sp-balance` and the current ttl with `sp-ttl`.
 
 Here's our base command for building the transaction:
 
-    cardano-cli shelley transaction build-raw \
+    cardano-cli transaction build-raw \
         --tx-in <utxo number>#<txix> \
         --tx-out $(cat /config/keys/payment.addr)+0 \
         --ttl 0 \
@@ -614,7 +614,7 @@ Here's our base command for building the transaction:
 
 For calculating the min fee, we will use a witness count of 3 (since we will sign with payment.skey, stake.skey and cold.skey).
 
-    cardano-cli shelley transaction calculate-min-fee \
+    cardano-cli transaction calculate-min-fee \
         --tx-body-file tx.raw \
         --tx-in-count 1 \
         --tx-out-count 1 \
@@ -626,7 +626,7 @@ For calculating the min fee, we will use a witness count of 3 (since we will sig
 
 Then, using `expr <mybalance> - 500000000 - <minfees>`, we can deduct the remaining amount, and build the full request, which will look like this:
 
-    cardano-cli shelley transaction build-raw \
+    cardano-cli transaction build-raw \
         --tx-in <utxo number>#<txix> \
         --tx-out $(cat /config/keys/payment.addr)+<remaining_amount> \
         --ttl <current slotNo + 50000> \
@@ -637,7 +637,7 @@ Then, using `expr <mybalance> - 500000000 - <minfees>`, we can deduct the remain
 
 Once this is done, sign the transaction:
 
-    cardano-cli shelley transaction sign \
+    cardano-cli transaction sign \
         --tx-body-file tx.raw \
         --signing-key-file /config/keys/payment.skey \
         --signing-key-file /config/keys/stake.skey \
@@ -647,7 +647,7 @@ Once this is done, sign the transaction:
 
 And finally, submit it to the blockchain:
 
-    cardano-cli shelley transaction submit \
+    cardano-cli transaction submit \
         --tx-file tx.signed \
         --mainnet
 
@@ -655,11 +655,11 @@ Check with `sp-balance` if your amount was deducted from your payment address. I
 
 You can also check on cardano-cli. Get your pool id with:
 
-    cardano-cli shelley stake-pool id --verification-key-file /config/keys/cold.vkey
+    cardano-cli stake-pool id --verification-key-file /config/keys/cold.vkey
 
 Then:
 
-    cardano-cli shelley query ledger-state --mainnet | grep publicKey | grep <poolid>
+    cardano-cli query ledger-state --mainnet | grep publicKey | grep <poolid>
 
 should return a non-empty string.
 
@@ -910,15 +910,15 @@ Third, configure your metrics to be handled by TraceForwarderBK. If you want all
                 "EKGViewBK",
                 "TraceForwarderBK"
             ],
-            "cardano.node.BlockFetchDecision.peers": [
+            "cardano.node.metrics.connectedPeers": [
                 "EKGViewBK",
                 "TraceForwarderBK"
             ],
-            "cardano.node.ChainDB.metrics": [
+            "cardano.node.metrics.ChainDB": [
                 "EKGViewBK",
                 "TraceForwarderBK"
             ],
-            "cardano.node.Forge.metrics": [
+            "cardano.node.metrics.Forge": [
                 "EKGViewBK",
                 "TraceForwarderBK"
             ],
