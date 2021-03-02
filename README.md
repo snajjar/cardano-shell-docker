@@ -818,6 +818,45 @@ Once you have gathered all the witnesses, assemble the transaction in 1 file, an
         --mainnet
 
 
+## Rotate your KES keypair
+
+The KES keypair you generated is only valid for a certain number of epochs. After 3 month, your KES keypair will become "poisoned", you will have to generate another if you want to keep your node able to sign blocks.
+
+From your `local` machine, launch a cardano-shell (with node), and generate a new KES keypair.
+
+    cardano-cli node key-gen-KES \
+        --verification-key-file /config/keys/kes.vkey \
+        --signing-key-file /config/keys/kes.skey
+
+Now, we'll issue a new opcert, confirming with cold.skey that this new kes key is our. We need the current KES period for that, which is the current slot number, divided by the number of slots per KES configured for this era. You can calculate it as such:
+
+    # grep KES /config/mainnet-shelley-genesis.json
+    "slotsPerKESPeriod": 129600,
+    "maxKESEvolutions": 62,
+
+    # sp-ttl
+    {
+        "blockNo": 5409128,
+        "headerHash": "31927a0b48768a486256588567609286274a09d7aa5586c8e93b0dc3ddcb89f8",
+        "slotNo": 23117420
+    }
+
+    # expr 23117420 / 129600
+    178
+
+Now we can issue or new node certificate:
+
+    cardano-cli node issue-op-cert \
+    --kes-verification-key-file /config/keys/kes.vkey \
+    --cold-signing-key-file /config/keys/cold.skey \
+    --operational-certificate-issue-counter /config/keys/cold.counter \
+    --kes-period 178 \
+    --out-file /config/keys/node.cert
+
+Save your keys to your local `.backup` folder.
+
+Copy `kes.vkey` and the new `node.cert` file to the `block` machine (in the docker/config/keys subfolder), and restart the block-producer docker with `docker container restart block-producer`.
+
 ## Update the stakepool parameters
 
 Over time, you'll gather more funds. You might want to change your pledge, your margin, or some of your metadata.
