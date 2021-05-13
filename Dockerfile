@@ -1,18 +1,25 @@
 FROM debian:stable-slim
 
 # version of cardano-node to build
-ARG VERSION=1.25.1
+ARG CARDANO_NODE_VERSION=1.26.2
+ARG CNCLI_VERSION=2.0.3
+ARG GHC_VERSION=8.10.4
 
 # based on arradev/cardano-node
 LABEL maintainer="contact@stakepool.fr"
 SHELL ["/bin/bash", "-c"]
 
+# Install software-properties-common to get add-apt-repository command
+RUN apt-get update -y && apt-get install -y software-properties-common && apt-get clean
+
 # Install build dependencies
 RUN apt-get update -y \
     && apt-get install -y automake build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev make g++ \
-    tmux git jq wget libncursesw5 libtool autoconf vim procps dnsutils bc curl nano cron python3 python3-pip htop unzip grc dbus prometheus \
+    tmux git jq wget gpg libncursesw5 libtool autoconf vim procps dnsutils bc curl nano cron python3 python3-pip htop unzip grc dbus prometheus \
     prometheus-node-exporter software-properties-common node.js npm \
     && apt-get clean
+
+RUN pip3 install pytz
 
 # Install PM2: process manager to auto-restart prometheus-node-exporter of grafana on crash
 RUN npm install -g pm2
@@ -58,14 +65,14 @@ RUN wget https://downloads.haskell.org/~cabal/cabal-install-3.2.0.0/cabal-instal
     && cabal update && cabal --version
 
 # Install GHC
-RUN wget https://downloads.haskell.org/~ghc/8.6.5/ghc-8.6.5-x86_64-deb9-linux.tar.xz \
-    && tar -xf ghc-8.6.5-x86_64-deb9-linux.tar.xz \
-    && rm ghc-8.6.5-x86_64-deb9-linux.tar.xz \
-    && cd ghc-8.6.5 \
+RUN wget https://downloads.haskell.org/~ghc/$GHC_VERSION/ghc-$GHC_VERSION-x86_64-deb9-linux.tar.xz \
+    && tar -xf ghc-$GHC_VERSION-x86_64-deb9-linux.tar.xz \
+    && rm ghc-$GHC_VERSION-x86_64-deb9-linux.tar.xz \
+    && cd ghc-$GHC_VERSION \
     && ./configure \
     && make install \
     && cd / \
-    && rm -rf /ghc-8.6.5
+    && rm -rf /ghc-$GHC_VERSION
 
 # Install libsodium
 RUN git clone https://github.com/input-output-hk/libsodium \
@@ -82,20 +89,22 @@ ENV LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH" \
 
 # Install cardano-node
 RUN echo "Building tags/$VERSION..." \
-    && echo tags/$VERSION > /CARDANO_BRANCH \
+    && echo tags/$CARDANO_NODE_VERSION > /CARDANO_BRANCH \
     && git clone https://github.com/input-output-hk/cardano-node.git \
     && cd cardano-node \
     && git fetch --all --tags \
     && git tag \
-    && git checkout $VERSION \
+    && git checkout ${CARDANO_NODE_VERSION} \
     && echo "Building version $VERSION" \
     && cabal build all \
     && mkdir -p /root/.cabal/bin/ \
-    && cp /cardano-node/dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-node-${VERSION}/x/cardano-node/build/cardano-node/cardano-node /root/.cabal/bin/ \
-    && cp /cardano-node/dist-newstyle/build/x86_64-linux/ghc-8.6.5/cardano-cli-${VERSION}/x/cardano-cli/build/cardano-cli/cardano-cli /root/.cabal/bin/ \
+    && find . -name cardano-node \
+    && find . -name cardano-cli \
+    && cp /cardano-node/dist-newstyle/build/x86_64-linux/ghc-${GHC_VERSION}/cardano-node-${CARDANO_NODE_VERSION}/x/cardano-node/build/cardano-node/cardano-node /root/.cabal/bin/ \
+    && cp /cardano-node/dist-newstyle/build/x86_64-linux/ghc-${GHC_VERSION}/cardano-cli-${CARDANO_NODE_VERSION}/x/cardano-cli/build/cardano-cli/cardano-cli /root/.cabal/bin/ \
     && rm -rf /root/.cabal/packages \
-    && rm -rf /usr/local/lib/ghc-8.6.5/ \
-    && rm -rf /root/.cabal/store/ghc-8.6.5 \
+    && rm -rf /usr/local/lib/ghc-${GHC_VERSION}/ \
+    && rm -rf /root/.cabal/store/ghc-${GHC_VERSION} \
     && rm -rf /cardano-node/dist-newstyle/
 
 # Install RTView
@@ -109,6 +118,32 @@ ENV PATH="/RTView/:${PATH}"
 
 # Remove /etc/profile, so it doesn't mess up our PATH env
 RUN rm /etc/profile
+
+# Install cncli
+RUN mkdir -p $HOME/.cargo/bin \
+    && chown -R $USER\: $HOME/.cargo \
+    && touch $HOME/.profile \
+    && chown $USER\: $HOME/.profile \
+    && curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y \
+    && source $HOME/.cargo/env \
+    && rustup install stable \
+    && rustup default stable \
+    && rustup update \
+    && rustup component add clippy rustfmt \
+    && source $HOME/.cargo/env \
+    && mkdir ~/git \
+    && cd ~/git \
+    && git clone --recurse-submodules https://github.com/AndrewWestberg/cncli \
+    && cd cncli \
+    && git checkout v${CNCLI_VERSION} \
+    && cargo install --path . --force \
+    && cd ..
+
+# install leaderlog script
+RUN pip3 install pytz
+RUN mkdir -p /scripts \
+    && cd /scripts \
+    && git clone https://github.com/papacarp/pooltool.io
 
 # Add config
 RUN mkdir -p /config/

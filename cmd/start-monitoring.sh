@@ -17,8 +17,9 @@ then
     /cmd/start-rtview.sh
 else
     # local node: start all
-    /cmd/start-prometheus-exporter.sh;
-    /cmd/start-prometheus-server.sh;
-    /cmd/start-rtview.sh
+    echo "not doing any logging for node"
+    #/cmd/start-prometheus-exporter.sh;
+    #/cmd/start-prometheus-server.sh;
+    #/cmd/start-rtview.sh
 fi
 
