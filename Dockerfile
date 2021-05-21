@@ -1,7 +1,7 @@
 FROM debian:stable-slim
 
 # version of cardano-node to build
-ARG CARDANO_NODE_VERSION=1.26.2
+ARG CARDANO_NODE_VERSION=1.27.0
 ARG CNCLI_VERSION=2.0.3
 ARG GHC_VERSION=8.10.4
 

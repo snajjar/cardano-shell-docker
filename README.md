@@ -1106,7 +1106,8 @@ cardano-shell-docker implements a auto-updating topology option. To use it on th
     ./cardano-shell.sh relay autotopology
 
 Launching shell with the autotopology option will make it add a crontab to run the `/cmd/topologyUpdater.sh` script every day.
-This script fetch 20 relay nodes from adapools, replacing the first one with your block-producing node (as defined in with `BLOCK_IP` and `BLOCK_PORT` env var in `/cmd/config.sh`, and replacing the second one with IOHK relay)
+
+This script fetch 20 relay nodes from adapools, and add on top whatever you placed on the `/config/{node|relay}/base-topology.json` file (respect the same format than mainnet-topology.json).
 
 You can also test it on your local node with the following:
 

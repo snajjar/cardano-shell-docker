@@ -13,6 +13,8 @@ if [ "$2" == "autotopology" ]; then
     #install new cron file
     crontab /config/topologycron
     rm /config/topologycron
+
+    /cmd/topologyUpdater.sh
 else
     echo "Starting cardano-node WITHOUT auto-updating topology"
 fi
