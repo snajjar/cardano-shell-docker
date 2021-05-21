@@ -148,6 +148,8 @@ RUN mkdir -p /scripts \
 # Add config
 RUN mkdir -p /config/
 VOLUME /config/
+RUN mkdir -p /logs/
+VOLUME /logs/
 
 # Expose ports
 ## cardano-node, EKG, Prometheus
