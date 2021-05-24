@@ -17,13 +17,14 @@ SESSION="CARDANO"
 
 mkdir -p /logs
 
-# Launch Cardano-node
+# Launch Cardano-node, 500mo log
 echo "Launching cardano node"
-/cmd/start-cardano-node.sh $1 $2 2&>1 > /logs/cardano-node.log &
+/cmd/start-cardano-node.sh $1 $2 2>&1 | multilog n100 ./logs/cardano-node &
 
-# Launch monitoring
+# Launch monitoring, 50 mo log
 echo "Launching monitoring..."
-/cmd/start-monitoring.sh $1 2&>1 > /logs/start-monitoring.log &
+/cmd/start-monitoring.sh $1 2>&1 | multilog n100 /logs/start-monitoring &
 
 # Give the user an environment shell
+echo "Starting shell..."
 /bin/bash

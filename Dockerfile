@@ -16,7 +16,7 @@ RUN apt-get update -y && apt-get install -y software-properties-common && apt-ge
 RUN apt-get update -y \
     && apt-get install -y automake build-essential pkg-config libffi-dev libgmp-dev libssl-dev libtinfo-dev libsystemd-dev zlib1g-dev make g++ \
     tmux git jq wget gpg libncursesw5 libtool autoconf vim procps dnsutils bc curl nano cron python3 python3-pip htop unzip grc dbus prometheus \
-    prometheus-node-exporter software-properties-common node.js npm \
+    prometheus-node-exporter software-properties-common node.js npm daemontools \
     && apt-get clean
 
 RUN pip3 install pytz
